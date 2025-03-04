@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>z-bill-analyzer 账单分析</title>
+    <style>
+        :root {
+            --primary-color: #409EFF;
+            --success-color: #67C23A;
+            --error-color: #F56C6C;
+        }
+
+        :root {
+            --primary-color: #409EFF;
+            --success-color: #67C23A;
+            --error-color: #F56C6C;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui;
+            background: #f5f7fa;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+        }
+
+        .upload-container {
+            position: relative;
+            background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+            border: 1px solid rgba(64, 158, 255, 0.15); /* 与主色系呼应 */
+            padding: 2rem 3rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 600px;
+            transition: all 0.3s;
+        }
+
+        h2 {
+            color: #2c3e50;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            position: relative;
+            padding-left: 1.5rem;
+        }
+
+        h2::before { /* 增加品牌标识线 */
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 70%;
+            background: var(--primary-color);
+            border-radius: 2px;
+        }
+
+        .import-record {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1;
+        }
+
+        .icon-container {
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;  /* 稍微加大容器尺寸 */
+            height: 36px;
+            border-radius: 50%;
+            background: #f0f0f0;
+            transition: background 0.2s;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .icon-container::before {
+            content: "";
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            border: 5px solid transparent;
+            border-top-color: rgba(0, 0, 0, 0.8);
+            transform: translateX(-50%);
+        }
+
+        .icon-container::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease;
+            z-index: 999;
+            transition-delay: 0.3s;
+        }
+
+        .icon-container:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .icon-container:hover {
+            background: #e0e0e0;
+        }
+
+        .icon-clock {
+            font-size: 20px;  /* 稍微加大图标 */
+            position: relative;
+            z-index: 1;       /* 确保图标在容器最上层 */
+        }
+
+        .badge {
+            position: absolute;
+            top: -6px;    /* 调整垂直位置 */
+            right: -8px;  /* 调整水平位置 */
+            background: var(--error-color);
+            color: white;
+            border-radius: 10px;  /* 改为胶囊形状 */
+            padding: 2px 6px;
+            font-size: 12px;
+            min-width: 18px;
+            text-align: center;
+            line-height: 1.2;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .import-records-popup {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 40px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            max-height: 380px; /* 略微减少高度给标题留空间 */
+            overflow-y: auto;
+        }
+
+        .records-list {
+            padding: 8px 0; /* 调整内边距 */
+        }
+
+        .record-item {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .record-item:hover {
+            background-color: #f8f8f8;
+        }
+
+        .drop-zone {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.3s;
+            margin: 1rem 0;
+        }
+
+        .drop-zone:hover,
+        .drop-zone.dragover {
+            border-color: var(--primary-color);
+            background: #f8f9ff;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .file-list {
+            margin-top: 1rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            margin: 0.25rem 0;
+            background: #f8f8f8;
+            border-radius: 4px;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #eee;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: var(--primary-color);
+            transition: width 0.3s ease;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        button {
+            padding: 0.6rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+        }
+
+        .primary-btn {
+            background: var(--primary-color);
+            color: white;
+            font-size: 1.2em; /* 新增字体大小设置 */
+        }
+
+        .primary-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .popup-header {
+            padding: 12px 16px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #2c3e50;
+            border-bottom: 1px solid #ebebeb;
+            background: #ffffff;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            margin: 0;
+        }
+
+        .mock-data-link {
+            margin-top: 0.8rem;
+            text-align: center;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .mock-data-link span {
+            cursor: pointer;
+            text-decoration: underline;
+            transition: color 0.2s;
+        }
+
+        .mock-data-link span:hover {
+            color: var(--primary-color);
+        }
+
+    </style>
+</head>
+<body>
+<div class="upload-container">
+    <!-- 导入记录图标 -->
+    <div class="import-record">
+        <div class="icon-container" data-tooltip="账单分析记录" onclick="toggleImportRecords(event)">
+            <span class="icon-clock">🕒</span>
+            <span class="badge" id="importRecordCount">0</span>
+        </div>
+        <div class="import-records-popup" id="importRecordsPopup">
+            <div class="popup-header">账单分析记录</div>
+            <div class="records-list" id="recordsList"></div>
+        </div>
+    </div>
+
+    <h2>批量导入账单文件分析</h2>
+    <p>支持CSV格式。目前支持微信、支付宝、招商银行。</p>
+
+    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+        <div>点击选择文件 或 拖放文件到此区域</div>
+    </div>
+
+    <input type="file" id="fileInput" multiple accept=".csv">
+
+    <div class="file-list" id="fileList"></div>
+    <div class="progress-bar">
+        <div class="progress-fill" id="progress"></div>
+    </div>
+
+    <div class="action-buttons">
+        <button class="primary-btn" onclick="uploadFiles()">开始分析</button>
+    </div>
+
+    <!-- 添加模拟数据链接 -->
+    <div class="mock-data-link">
+        <span onclick="handleMockData()">模拟数据</span>
+    </div>
+</div>
+
+<script>
+    // 在页面加载时获取导入文件的记录
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/api/bill/getImportRecords')
+            .then(response => {
+                if (!response.ok) throw new Error('获取导入记录失败');
+                return response.json();
+            })
+            .then(data => {
+                window.importRecords = data.data;
+                document.getElementById('importRecordCount').textContent = data.data.length;
+            })
+            .catch(error => {
+                console.error('请求失败:', error);
+            });
+    });
+
+    // 切换导入记录弹窗
+    function toggleImportRecords(event) {
+        event.stopPropagation();
+        const popup = document.getElementById('importRecordsPopup');
+        popup.style.display = popup.style.display === 'block' ? 'none' : 'block';
+        if (popup.style.display === 'block') renderImportRecords();
+    }
+
+    // 渲染导入记录列表
+    function renderImportRecords() {
+        const recordsList = document.getElementById('recordsList');
+        recordsList.innerHTML = '';
+
+        if (!window.importRecords || window.importRecords.length === 0) {
+            recordsList.innerHTML = '<div class="record-item">暂无导入记录</div>';
+            return;
+        }
+
+        window.importRecords.forEach(record => {
+            const item = document.createElement('div');
+            item.className = 'record-item';
+            const importTime = new Date(record.importTime).toLocaleString();
+            const fileNames = Array.isArray(record.fileNames) ?
+                record.fileNames.slice(0, 2).join(', ') +
+                (record.fileNames.length > 2 ? ` 等${record.fileNames.length}个文件` : '') :
+                record.fileNames;
+
+            item.innerHTML = `
+                <div style="font-weight:500;margin-bottom:4px;">${importTime}</div>
+                <div style="font-size:0.9em;color:#666;">${fileNames}</div>
+            `;
+
+            item.addEventListener('click', () => {
+                document.cookie = `IMPORT_RECORD_ID=${record.id}; path=/; max-age=86400`;
+                window.location.href = '/visualization';
+            });
+
+            recordsList.appendChild(item);
+        });
+    }
+
+    // 点击页面其他区域关闭弹窗
+    document.addEventListener('click', function (event) {
+        const popup = document.getElementById('importRecordsPopup');
+        const iconContainer = document.querySelector('.icon-container');
+        if (!popup.contains(event.target) && !iconContainer.contains(event.target)) {
+            popup.style.display = 'none';
+        }
+    });
+
+    // 文件列表管理
+    let files = [];
+    const dropZone = document.getElementById('dropZone');
+    const fileList = document.getElementById('fileList');
+    const progressBar = document.getElementById('progress');
+
+    // 拖放事件处理
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        handleFiles(e.dataTransfer.files);
+    });
+
+    // 文件选择事件
+    document.getElementById('fileInput').addEventListener('change', (e) => {
+        handleFiles(e.target.files);
+    });
+
+    function handleFiles(newFiles) {
+        files = Array.from(newFiles);
+        renderFileList();
+    }
+
+    // 渲染文件列表
+    function renderFileList() {
+        fileList.innerHTML = files.map((file, index) => `
+                <div class="file-item">
+                    <span style="flex:1">${file.name}</span>
+                    <span>${formatSize(file.size)}</span>
+                    <button onclick="removeFile(${index})" style="margin-left:1rem">×</button>
+                </div>
+            `).join('');
+    }
+
+    // 文件上传逻辑
+    async function uploadFiles() {
+        if (files.length === 0) {
+            alert('请选择至少一个文件');
+            return;
+        }
+
+        const formData = new FormData();
+        files.forEach(file => formData.append('files', file));
+
+        try {
+            const response = await fetch('/api/bill/parse', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (!response.ok) throw new Error('上传失败');
+            let resJson = await response.json();
+            if (resJson.code === 200 && resJson.data.id != null) {
+                const id = resJson.data.id
+                console.log("id:::::" + id)
+                document.cookie = `IMPORT_RECORD_ID=${id}; path=/; max-age=86400`;
+                window.location.href = '/visualization';
+            }
+
+        } catch (error) {
+            alert(error.message);
+            progressBar.style.width = '0%';
+        }
+    }
+
+    // 辅助函数
+    function formatSize(bytes) {
+        const units = ['B', 'KB', 'MB', 'GB'];
+        let size = bytes;
+        for (const unit of units) {
+            if (size < 1024) return `${size.toFixed(1)}${unit}`;
+            size /= 1024;
+        }
+        return `${size.toFixed(1)}GB`;
+    }
+
+    function removeFile(index) {
+        files.splice(index, 1);
+        renderFileList();
+    }
+
+    function handleMockData() {
+        document.cookie = "IMPORT_RECORD_ID=0; path=/; max-age=86400"; // 有效期1天
+        window.location.href = '/visualization';
+    }
+
+</script>
+</body>
+</html>
