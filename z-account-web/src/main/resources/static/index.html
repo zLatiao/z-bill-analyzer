@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能文件分析平台</title>
+    <style>
+        :root {
+            --primary-color: #409EFF;
+            --success-color: #67C23A;
+            --error-color: #F56C6C;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui;
+            background: #f5f7fa;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+        }
+
+        .upload-container {
+            background: white;
+            padding: 2rem 3rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 600px;
+            transition: all 0.3s;
+        }
+
+        .drop-zone {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.3s;
+            margin: 1rem 0;
+        }
+
+        .drop-zone:hover,
+        .drop-zone.dragover {
+            border-color: var(--primary-color);
+            background: #f8f9ff;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .file-list {
+            margin-top: 1rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            margin: 0.25rem 0;
+            background: #f8f8f8;
+            border-radius: 4px;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #eee;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: var(--primary-color);
+            transition: width 0.3s ease;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        button {
+            padding: 0.6rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+        }
+
+        .primary-btn {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .primary-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+<div class="upload-container">
+    <h2>批量文件上传分析</h2>
+    <p>支持CSV格式</p>
+
+    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+        <div>点击选择文件 或 拖放文件到此区域</div>
+    </div>
+
+    <input type="file" id="fileInput" multiple accept=".csv">
+
+    <div class="file-list" id="fileList"></div>
+    <div class="progress-bar">
+        <div class="progress-fill" id="progress"></div>
+    </div>
+
+    <div class="action-buttons">
+        <button class="primary-btn" onclick="uploadFiles()">开始分析</button>
+    </div>
+</div>
+
+<script>
+    // 文件列表管理
+    let files = [];
+    const dropZone = document.getElementById('dropZone');
+    const fileList = document.getElementById('fileList');
+    const progressBar = document.getElementById('progress');
+
+    // 拖放事件处理
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        handleFiles(e.dataTransfer.files);
+    });
+
+    // 文件选择事件
+    document.getElementById('fileInput').addEventListener('change', (e) => {
+        handleFiles(e.target.files);
+    });
+
+    function handleFiles(newFiles) {
+        files = Array.from(newFiles);
+        renderFileList();
+    }
+
+    // 渲染文件列表
+    function renderFileList() {
+        fileList.innerHTML = files.map((file, index) => `
+                <div class="file-item">
+                    <span style="flex:1">${file.name}</span>
+                    <span>${formatSize(file.size)}</span>
+                    <button onclick="removeFile(${index})" style="margin-left:1rem">×</button>
+                </div>
+            `).join('');
+    }
+
+    // 文件上传逻辑
+    async function uploadFiles() {
+        if (files.length === 0) {
+            alert('请选择至少一个文件');
+            return;
+        }
+
+        const formData = new FormData();
+        files.forEach(file => formData.append('files', file));
+
+        try {
+            const response = await fetch('/api/bill/parse', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (!response.ok) throw new Error('上传失败');
+
+            const { id } = await response.json();
+            console.log("id:::::" + id)
+            document.cookie = `file_session=${id}; path=/; max-age=86400`;
+            window.location.href = '/visualization';
+
+        } catch (error) {
+            alert(error.message);
+            progressBar.style.width = '0%';
+        }
+    }
+
+    // 辅助函数
+    function formatSize(bytes) {
+        const units = ['B', 'KB', 'MB', 'GB'];
+        let size = bytes;
+        for (const unit of units) {
+            if (size < 1024) return `${size.toFixed(1)}${unit}`;
+            size /= 1024;
+        }
+        return `${size.toFixed(1)}GB`;
+    }
+
+    function removeFile(index) {
+        files.splice(index, 1);
+        renderFileList();
+    }
+</script>
+</body>
+</html>
