@@ -25,7 +25,7 @@
             background: white;
             padding: 2rem 3rem;
             border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             width: 600px;
             transition: all 0.3s;
         }
@@ -191,11 +191,13 @@
             });
 
             if (!response.ok) throw new Error('上传失败');
-
-            const { id } = await response.json();
-            console.log("id:::::" + id)
-            document.cookie = `file_session=${id}; path=/; max-age=86400`;
-            window.location.href = '/visualization';
+            let resJson = await response.json();
+            if (resJson.code === 200 && resJson.data.id != null) {
+                const id = resJson.data.id
+                console.log("id:::::" + id)
+                document.cookie = `file_session=${id}; path=/; max-age=86400`;
+                window.location.href = '/visualization';
+            }
 
         } catch (error) {
             alert(error.message);

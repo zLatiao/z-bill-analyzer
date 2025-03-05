@@ -5,5 +5,5 @@ import com.zzz.account.enums.BillSourceEnum;
 
 import java.io.InputStream;
 
-public record BillExcelParseParam(BillSourceEnum billSourceEnum, InputStream inputStream) {
+public record BillExcelParseParam(BillSourceEnum billSourceEnum, String fileName, InputStream inputStream) {
 }

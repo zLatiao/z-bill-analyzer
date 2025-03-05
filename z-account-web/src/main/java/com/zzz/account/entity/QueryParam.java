@@ -24,12 +24,17 @@ public class QueryParam {
 
     private LocalDate endDate;
 
-    private Integer pageIndex;
+    private Integer pageIndex = 1;
 
-    private Integer pageSize;
+    private Integer pageSize = 100;
 
     /**
      * 账单来源列表
      */
     private List<Integer> sourceList;
+
+    /**
+     * 过滤合并类型列表
+     */
+    private List<Integer> filterMergeType;
 }

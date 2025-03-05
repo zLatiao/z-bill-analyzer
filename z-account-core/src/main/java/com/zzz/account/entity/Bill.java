@@ -109,9 +109,17 @@ public class Bill implements Serializable {
      */
     private BankEnum bank;
 
-    private List<Bill> similarBills;
+    /**
+     * 相同的账单
+     */
+    private List<Bill> sameBills;
 
     private Boolean isMerge = false;
+
+    /**
+     * 0同类相同，1银行卡
+     */
+    private Integer mergeType;
 
     private Boolean noMatchRecord;
 

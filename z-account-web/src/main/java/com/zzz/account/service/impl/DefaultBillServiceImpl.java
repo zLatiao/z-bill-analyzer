@@ -53,6 +53,12 @@ public class DefaultBillServiceImpl implements IBillService {
         if (param.getSourceList() != null && !param.getSourceList().isEmpty()) {
             stream = stream.filter(bill -> param.getSourceList().contains(bill.getSource()));
         }
+        if (param.getFilterMergeType() != null && !param.getFilterMergeType().isEmpty()) {
+            // todo 这里真丑 考虑isMerge改为基本类型
+            stream = stream
+                    .filter(bill -> bill.getIsMerge() == null || !bill.getIsMerge()
+                            || (bill.getMergeType() != null && !param.getFilterMergeType().contains(bill.getMergeType())));
+        }
         return stream;
     }
 
@@ -174,7 +180,7 @@ public class DefaultBillServiceImpl implements IBillService {
 
         return new PageResult<>(pageData, total);
     }
-    
+
     private BillVO convertToVo(Bill bill) {
         BillVO billVO = BeanUtil.copyProperties(bill, BillVO.class);
         billVO.setAmountTypeStr(AmountTypeEnum.getEnum(billVO.getAmountType()).getDesc());

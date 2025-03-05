@@ -24,10 +24,11 @@ public class BillController {
     private IBillService billService;
 
     @PostMapping("/parse")
-    public ParseResultVO parse(@RequestParam("files") List<MultipartFile> files) {
+    public Result<ParseResultVO> parse(@RequestParam("files") List<MultipartFile> files) {
         List<BillExcelParseParam> params = files.stream().map(file -> {
             try {
-                return new BillExcelParseParam(FileNameParser.parse(file.getOriginalFilename()), file.getInputStream());
+                String filename = file.getOriginalFilename();
+                return new BillExcelParseParam(FileNameParser.parse(filename), filename, file.getInputStream());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -35,7 +36,7 @@ public class BillController {
 
         List<BaseBillInfo> billInfos = ParserCore.parse(params);
 
-        return new ParseResultVO(billService.saveBill(billInfos));
+        return Result.success(new ParseResultVO(billService.saveBill(billInfos)));
     }
 
     // 模拟仪表盘数据
@@ -67,14 +68,8 @@ public class BillController {
 
     // 模拟分页交易数据
     @GetMapping("/page")
-    public Result<PageResult<BillVO>> page(
-            @CookieValue(value = "file_session") Integer id,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String keyword,
-            QueryParam param) {
+    public Result<PageResult<BillVO>> page(@CookieValue(value = "file_session") Integer id, QueryParam param) {
         param.setId(id);
-
         return Result.success(billService.getPage(param));
     }
 

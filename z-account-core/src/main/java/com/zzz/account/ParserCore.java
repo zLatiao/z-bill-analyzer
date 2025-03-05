@@ -25,7 +25,9 @@ public class ParserCore {
     }
 
     public static List<BaseBillInfo> parse(List<BillExcelParseParam> params) {
-        List<BaseBillInfo> billInfos = params.stream().map(param -> enumMap.get(param.billSourceEnum()).parse(param.inputStream())).collect(Collectors.toList());
+        List<BaseBillInfo> billInfos = params.stream()
+                .map(param -> enumMap.get(param.billSourceEnum()).parse(param.inputStream()).setFileName(param.fileName()))
+                .collect(Collectors.toList());
         List<Bill> bills = new BillMergeStrategyNew().merge(billInfos);
         return billInfos;
     }
