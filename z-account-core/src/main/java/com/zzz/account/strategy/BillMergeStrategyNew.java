@@ -42,6 +42,8 @@ public class BillMergeStrategyNew {
                 mergeWxBill(wxBillInfo, otherBillInfos);
             } else if (billInfo instanceof AlipayBillInfo alipayBillInfo) {
                 mergeAlipayBill(alipayBillInfo, otherBillInfos);
+            } else if (billInfo instanceof CmbBillInfo cmbBillInfo) {
+                mergeCmbBill(cmbBillInfo, otherBillInfos);
             }
         }
         List<Bill> result = billInfos.stream().flatMap(x -> x.getBills().stream()).collect(Collectors.toList());
@@ -49,12 +51,34 @@ public class BillMergeStrategyNew {
         return result;
     }
 
-    private void mergeAlipayBill(AlipayBillInfo alipayBillInfo, List<BaseBillInfo> billInfos) {
+    private void mergeCmbBill(CmbBillInfo cmbBillInfo, List<BaseBillInfo> otherBillInfos) {
+        mergeCmbAndCmb(cmbBillInfo, otherBillInfos.stream().filter(x -> x instanceof CmbBillInfo).toList());
 
-        mergeAlipayAndAlipay(alipayBillInfo, billInfos.stream().filter(x -> x instanceof AlipayBillInfo).map(x -> (AlipayBillInfo) x).toList());
+    }
+
+    private void mergeCmbAndCmb(CmbBillInfo cmbBillInfo, List<BaseBillInfo> otherWxBillInfos) {
+        if (cmbBillInfo == null || otherWxBillInfos.isEmpty()) {
+            return;
+        }
+
+        List<Bill> otherBills = otherWxBillInfos.stream().flatMap(x -> x.getBills().stream()).toList();
+        cmbBillInfo.getBills().stream()
+                .filter(currBill -> currBill.getIsMerge() == null || !currBill.getIsMerge())
+                .forEach(currBill -> otherBills.stream()
+                        .filter(otherBill -> Objects.equals(currBill.getTransactionTime(), otherBill.getTransactionTime()))
+                        .filter(otherBill -> Objects.equals(currBill.getAmountType(), otherBill.getAmountType()))
+                        .filter(otherBill -> Objects.equals(currBill.getAmount(), otherBill.getAmount()))
+                        .filter(otherBill -> Objects.equals(currBill.getTransactionType(), otherBill.getTransactionType()))
+                        .filter(otherBill -> Objects.equals(currBill.getRemark(), otherBill.getRemark()))
+                        .forEach(bill -> setMerge(bill, 0)));
+    }
+
+    private void mergeAlipayBill(AlipayBillInfo alipayBillInfo, List<BaseBillInfo> otherBillInfos) {
+
+        mergeAlipayAndAlipay(alipayBillInfo, otherBillInfos.stream().filter(x -> x instanceof AlipayBillInfo).map(x -> (AlipayBillInfo) x).toList());
 
 
-        mergeAlipayAndCmb(alipayBillInfo, billInfos);
+        mergeAlipayAndCmb(alipayBillInfo, otherBillInfos);
     }
 
     private void mergeAlipayAndAlipay(AlipayBillInfo alipayBillInfo, List<AlipayBillInfo> otherAlipayInfos) {
@@ -64,14 +88,11 @@ public class BillMergeStrategyNew {
 
         List<Bill> otherBills = otherAlipayInfos.stream().flatMap(x -> x.getBills().stream()).toList();
 
-        alipayBillInfo.getBills().forEach(currBill -> {
-            List<Bill> sameBills = otherBills.stream()
-                    // todo 按理说只需要账单单号应该就够了
-                    .filter(otherBill -> currBill.getBillNo().equals(otherBill.getBillNo()))
-                    .filter(otherBill -> currBill.getMerchantNo().equals(otherBill.getMerchantNo()))
-                    .toList();
-            // todo doSomething
-        });
+        alipayBillInfo.getBills().stream()
+                .filter(currBill -> currBill.getIsMerge() == null || !currBill.getIsMerge())
+                .forEach(currBill -> otherBills.stream()
+                        .filter(otherBill -> currBill.getBillNo().equals(otherBill.getBillNo()))
+                        .forEach(bill -> setMerge(bill, 0)));
     }
 
     private void mergeAlipayAndCmb(AlipayBillInfo alipayBillInfo, List<BaseBillInfo> billInfos) {
@@ -133,14 +154,15 @@ public class BillMergeStrategyNew {
 
         if (filterBills.size() == 1) {
             Bill cmb = filterBills.getFirst();
-            bills.forEach(bill -> {
-                if (bill.getSameBills() == null) {
-                    bill.setSameBills(new ArrayList<>());
-                }
-                cmb.setIsMerge(true);
-                bill.setIsMerge(true);
-//                bill.getSameBills().add(cmb);
-            });
+            setMerge(cmb, 1);
+//            bills.forEach(bill -> {
+//                if (bill.getSameBills() == null) {
+//                    bill.setSameBills(new ArrayList<>());
+//                }
+//                cmb.setIsMerge(true);
+//                bill.setIsMerge(true);
+////                bill.getSameBills().add(cmb);
+//            });
             return;
         } else if (filterBills.size() > 1) {
             log.error("匹配到多个费用：{}， \n{}", bills, filterBills);
@@ -154,13 +176,14 @@ public class BillMergeStrategyNew {
                 .collect(Collectors.toList());
         if (filterBills2.size() == 1) {
             Bill cmb = filterBills2.getFirst();
+            setMerge(cmb, 1);
             bills.forEach(bill -> {
-                if (bill.getSameBills() == null) {
-                    bill.setSameBills(new ArrayList<>());
-                }
-                cmb.setIsMerge(true);
-                bill.setIsMerge(true);
-                bill.getSameBills().add(cmb);
+//                if (bill.getSameBills() == null) {
+//                    bill.setSameBills(new ArrayList<>());
+//                }
+//                cmb.setIsMerge(true);
+//                bill.setIsMerge(true);
+//                bill.getSameBills().add(cmb);
             });
             return;
         } else if (filterBills2.size() > 1) {
@@ -174,14 +197,15 @@ public class BillMergeStrategyNew {
                 .toList();
         if (filterBills3.size() == 1) {
             Bill cmb = filterBills3.getFirst();
-            bills.forEach(bill -> {
-                if (bill.getSameBills() == null) {
-                    bill.setSameBills(new ArrayList<>());
-                }
-                cmb.setIsMerge(true);
-                bill.setIsMerge(true);
-                bill.getSameBills().add(cmb);
-            });
+            setMerge(cmb, 1);
+//            bills.forEach(bill -> {
+//                if (bill.getSameBills() == null) {
+//                    bill.setSameBills(new ArrayList<>());
+//                }
+//                cmb.setIsMerge(true);
+//                bill.setIsMerge(true);
+//                bill.getSameBills().add(cmb);
+//            });
             return;
         } else if (filterBills2.size() > 1) {
             log.error("匹配到多个费用：{}， \n{}", bills, filterBills2);
@@ -194,31 +218,30 @@ public class BillMergeStrategyNew {
                 .toList();
         if (filterBills4.isEmpty()) {
             log.error("找不到匹配的招商银行账单记录：{}", bills);
-            bills.forEach(bill -> bill.setNoMatchRecord(true));
         } else if (filterBills4.size() == 1) {
             Bill cmb = filterBills4.getFirst();
-            bills.forEach(bill -> {
-                if (bill.getSameBills() == null) {
-                    bill.setSameBills(new ArrayList<>());
-                }
-                cmb.setIsMerge(true);
-                bill.setIsMerge(true);
-                bill.getSameBills().add(cmb);
-            });
-            return;
+            setMerge(cmb, 1);
+//            bills.forEach(bill -> {
+//                if (bill.getSameBills() == null) {
+//                    bill.setSameBills(new ArrayList<>());
+//                }
+//                cmb.setIsMerge(true);
+//                bill.setIsMerge(true);
+//                bill.getSameBills().add(cmb);
+//            });
         } else {
             log.error("匹配到多个费用：{}， \n{}", bills, filterBills2);
         }
     }
 
 
-    private static void mergeWxBill(WxBillInfo wxBillInfo, List<BaseBillInfo> billInfos) {
+    private static void mergeWxBill(WxBillInfo wxBillInfo, List<BaseBillInfo> otherBillInfos) {
 
-        mergeWxAndWx(wxBillInfo, billInfos.stream().filter(x -> x instanceof WxBillInfo).toList());
+        mergeWxAndWx(wxBillInfo, otherBillInfos.stream().filter(x -> x instanceof WxBillInfo).toList());
 
         for (Bill bill : wxBillInfo.getBills()) {
             if (BankEnum.CMB.equals(bill.getBank())) {
-                mergeWxAndCmb(bill, billInfos);
+                mergeWxAndCmb(bill, otherBillInfos);
             }
         }
     }
@@ -237,22 +260,16 @@ public class BillMergeStrategyNew {
 
         List<Bill> otherBills = otherWxBillInfos.stream().flatMap(x -> x.getBills().stream()).toList();
 
-        wxBillInfo.getBills().stream().filter(currBill -> currBill.getIsMerge() == null || !currBill.getIsMerge())
-                .forEach(currBill -> {
-                    List<Bill> otherSameBills = otherBills.stream()
-                            // todo 按理说只需要账单单号应该就够了
-                            .filter(otherBill -> currBill.getBillNo().equals(otherBill.getBillNo()))
-                            .toList();
-                    // todo doSomething
-                    otherSameBills.forEach(bill -> {
-                        bill.setIsMerge(true);
-                        bill.setMergeType(0);
-                    });
+        wxBillInfo.getBills().stream()
+                .filter(currBill -> currBill.getIsMerge() == null || !currBill.getIsMerge())
+                .forEach(currBill -> otherBills.stream()
+                        .filter(otherBill -> currBill.getBillNo().equals(otherBill.getBillNo()))
+                        .forEach(bill -> setMerge(bill, 0)));
+    }
 
-                    ArrayList<Bill> sameBills = new ArrayList<>(otherSameBills);
-                    sameBills.add(currBill);
-//            sameBills.forEach(bill -> bill.setSameBills(sameBills));
-                });
+    private static void setMerge(Bill bill, Integer mergeType) {
+        bill.setIsMerge(true);
+        bill.setMergeType(mergeType);
     }
 
     private static void mergeWxAndCmb(Bill bill, List<BaseBillInfo> billInfos) {
@@ -285,12 +302,7 @@ public class BillMergeStrategyNew {
 
         if (filterBills.size() == 1) {
             Bill cmb = filterBills.getFirst();
-            if (bill.getSameBills() == null) {
-                bill.setSameBills(new ArrayList<>());
-            }
-            cmb.setIsMerge(true);
-            bill.setIsMerge(true);
-            bill.getSameBills().add(cmb);
+            setMerge(cmb, 1);
             return;
         }
 
@@ -308,12 +320,7 @@ public class BillMergeStrategyNew {
             log.error("找不到匹配的招商银行账单记录：{}", bill);
         } else if (filterBills2.size() == 1) {
             Bill cmb = filterBills2.getFirst();
-            if (bill.getSameBills() == null) {
-                bill.setSameBills(new ArrayList<>());
-            }
-            cmb.setIsMerge(true);
-            bill.setIsMerge(true);
-            bill.getSameBills().add(cmb);
+            setMerge(cmb, 1);
         } else {
             log.error("匹配到多个费用：{}， \n{}", bill, filterBills2);
         }

@@ -6,7 +6,6 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,9 +22,7 @@ import java.util.List;
 @Setter
 @Accessors(chain = true)
 @ToString
-public class Bill implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class Bill {
 
     /**
      * id
@@ -121,11 +118,8 @@ public class Bill implements Serializable {
      */
     private Integer mergeType;
 
-    private Boolean noMatchRecord;
-
     /**
-     * 是否参与统计
-     * todo
+     * 招商银行还有这个余额
      */
-    private boolean isStatistic;
+    private BigDecimal balance;
 }
