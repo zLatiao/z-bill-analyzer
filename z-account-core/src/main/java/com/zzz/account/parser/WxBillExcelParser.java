@@ -54,6 +54,7 @@ public class WxBillExcelParser implements IBillExcelParser<WxBillInfo, WxBillRec
 
     @Override
     public List<WxBillRecord> parseRecords(InputStream is) {
+        // todo 这里可能要加个文件名判断是新的还是旧的
         return EasyExcel.read(is)
                 .autoCloseStream(false)
                 .head(WxBillRecord.class)

@@ -26,9 +26,16 @@ public class BillConvertUtil {
 
     // todo 解析的时候就把银行卡号解析出来
     public static Bill convert(WxBillRecord billDTO) {
+        String billAmount = billDTO.getAmount();
+        String amountStr;
+        if (billAmount.contains("¥")) {
+            amountStr = billAmount.substring(billAmount.indexOf('¥') + 1).replace(",", "");
+        } else {
+            amountStr = billAmount.substring(billAmount.indexOf('￥') + 1).replace(",", "");
+        }
+
         Bill bill = new Bill();
-        String replace = billDTO.getAmount().substring(billDTO.getAmount().indexOf('¥') + 1).replace(",", "");
-        bill.setAmount(new BigDecimal(replace));
+        bill.setAmount(new BigDecimal(amountStr));
         bill.setAmountType(AmountTypeEnum.getEnum(billDTO.getIncomeOrExpense()).getType());
         bill.setTransactionType(billDTO.getTransactionType());
         bill.setSource(BillSourceEnum.WX.ordinal());
