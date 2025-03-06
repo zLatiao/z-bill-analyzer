@@ -1,6 +1,8 @@
 package com.zzz.account.parser;
 
 import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.context.AnalysisContext;
+import com.alibaba.excel.read.listener.ReadListener;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import com.zzz.account.entity.CmbBillInfo;
 import com.zzz.account.entity.CmbBillRecord;
@@ -53,11 +55,22 @@ public class CmbBillExcelParser implements IBillExcelParser<CmbBillInfo, CmbBill
     public List<CmbBillRecord> parseRecords(InputStream is) {
         return EasyExcel
                 .read(is)
-                .autoCloseStream(false)
                 .head(CmbBillRecord.class)
-                .charset(Charset.forName("GBK"))
+//                .registerReadListener(new ReadListener<Object>() {
+//                    @Override
+//                    public void invoke(Object data, AnalysisContext context) {
+//                        System.out.println();
+//                    }
+//
+//                    @Override
+//                    public void doAfterAllAnalysed(AnalysisContext context) {
+//
+//                    }
+//                })
+//                .charset(Charset.forName("GBK"))
                 .excelType(ExcelTypeEnum.CSV)
-                .headRowNumber(8)
+                // TODO: 2025/3/6 不知道怎么就第6行了
+                .headRowNumber(7)
                 .sheet()
                 .doReadSync();
     }
@@ -84,8 +97,6 @@ public class CmbBillExcelParser implements IBillExcelParser<CmbBillInfo, CmbBill
     private static List<String> parseInfoByEasyExcel(InputStream is) {
         List<String> dataList = new ArrayList<>();
         EasyExcel.read(is, new BillExcelListener(excelReadNumbers, excelStopNumber, dataList))
-                .autoCloseStream(false)
-                .charset(Charset.forName("GBK"))
                 .excelType(ExcelTypeEnum.CSV)
                 .sheet()
                 .doRead();

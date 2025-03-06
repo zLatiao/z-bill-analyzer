@@ -24,9 +24,11 @@ public interface IBillExcelParser<T extends BaseBillInfo, R> {
         byte[] bytes = IoUtil.readBytes(is);
         ByteArrayInputStream is1 = new ByteArrayInputStream(bytes);
         ByteArrayInputStream is2 = new ByteArrayInputStream(bytes);
-        T t = (T) parseInfo(is1).setBills(convert(parseRecords(is2)));
-        afterParse(t);
-        return t;
+        List<R> billRecords = parseRecords(is1);
+        T billInfo = parseInfo(is2);
+        billInfo.setBills(convert(billRecords));
+        afterParse(billInfo);
+        return billInfo;
     }
 
     default void afterParse(T billInfo) {

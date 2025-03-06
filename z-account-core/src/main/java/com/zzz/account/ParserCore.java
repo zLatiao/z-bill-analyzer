@@ -6,10 +6,9 @@ import com.zzz.account.parser.AlipayBillExcelParser;
 import com.zzz.account.parser.CmbBillExcelParser;
 import com.zzz.account.parser.IBillExcelParser;
 import com.zzz.account.parser.WxBillExcelParser;
-import com.zzz.account.strategy.BillMergeStrategyNew;
+import com.zzz.account.util.BillMergeUtil;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.File;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,7 +27,7 @@ public class ParserCore {
         List<BaseBillInfo> billInfos = params.stream()
                 .map(param -> enumMap.get(param.billSourceEnum()).parse(param.inputStream()).setFileName(param.fileName()))
                 .collect(Collectors.toList());
-        List<Bill> bills = new BillMergeStrategyNew().merge(billInfos);
+        BillMergeUtil.merge(billInfos);
         return billInfos;
     }
 }
