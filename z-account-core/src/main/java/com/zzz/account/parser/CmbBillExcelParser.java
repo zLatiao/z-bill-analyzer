@@ -53,26 +53,15 @@ public class CmbBillExcelParser implements IBillExcelParser<CmbBillInfo, CmbBill
 
     @Override
     public List<CmbBillRecord> parseRecords(InputStream is) {
-        return EasyExcel
+        List<CmbBillRecord> cmbBillRecords = EasyExcel
                 .read(is)
                 .head(CmbBillRecord.class)
-//                .registerReadListener(new ReadListener<Object>() {
-//                    @Override
-//                    public void invoke(Object data, AnalysisContext context) {
-//                        System.out.println();
-//                    }
-//
-//                    @Override
-//                    public void doAfterAllAnalysed(AnalysisContext context) {
-//
-//                    }
-//                })
-//                .charset(Charset.forName("GBK"))
                 .excelType(ExcelTypeEnum.CSV)
-                // TODO: 2025/3/6 不知道怎么就第6行了
                 .headRowNumber(7)
                 .sheet()
                 .doReadSync();
+        // 最后两行是收入合计、支出合计
+        return cmbBillRecords.subList(0, cmbBillRecords.size() - 2);
     }
 
     @Override

@@ -21,7 +21,12 @@ public interface IBillExcelParser<T extends BaseBillInfo, R> {
 
     @SuppressWarnings("unchecked")
     default T parse(InputStream is) {
-        byte[] bytes = IoUtil.readBytes(is);
+        byte[] bytes;
+        try {
+            bytes = is.readAllBytes();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         ByteArrayInputStream is1 = new ByteArrayInputStream(bytes);
         ByteArrayInputStream is2 = new ByteArrayInputStream(bytes);
         List<R> billRecords = parseRecords(is1);

@@ -14,7 +14,11 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -54,12 +58,38 @@ public class DefaultBillServiceImpl implements IBillService {
             stream = stream.filter(bill -> param.getSourceList().contains(bill.getSource()));
         }
         if (param.getFilterMergeType() != null && !param.getFilterMergeType().isEmpty()) {
-            // todo 这里真丑 考虑isMerge改为基本类型
-            stream = stream
-                    .filter(bill -> bill.getIsMerge() == null || !bill.getIsMerge()
-                            || (bill.getMergeType() != null && !param.getFilterMergeType().contains(bill.getMergeType())));
+            stream = stream.filter(bill -> !bill.isMerge() || (bill.getMergeType() != null && !param.getFilterMergeType().contains(bill.getMergeType())));
         }
+        // TODO: 2025/3/11 加个排序筛选
+        stream = stream.sorted(Comparator.comparing(Bill::getTransactionTime));
         return stream;
+    }
+
+    public void getBillInfo(Integer id) {
+
+    }
+
+    @Override
+    public ImportBillInfoVO getImportBillInfo(Integer id) {
+        BillAll billAll = getBill(id);
+        List<BaseBillInfo> baseBillInfos = billAll.billInfos();
+        List<Bill> bills = billAll.bills();
+
+        List<String> fileNames = baseBillInfos.stream().map(BaseBillInfo::getFileName).distinct().toList();
+        List<String> transactionTypes = bills.stream().map(Bill::getTransactionType).distinct().toList();
+        // todo 这里现在取得是账单信息的起止时间，而不是账单明细的起止时间
+        LocalDate startDate = baseBillInfos.stream()
+                .map(BaseBillInfo::getStartTime)
+                .map(LocalDateTime::toLocalDate)
+                .min(Comparator.comparing(x -> x))
+                .orElse(null);
+        LocalDate endDate = baseBillInfos.stream()
+                .map(BaseBillInfo::getEndTime)
+                .map(LocalDateTime::toLocalDate)
+                .max(Comparator.comparing(x -> x))
+                .orElse(null);
+
+        return new ImportBillInfoVO(fileNames, transactionTypes, startDate, endDate);
     }
 
     @Override

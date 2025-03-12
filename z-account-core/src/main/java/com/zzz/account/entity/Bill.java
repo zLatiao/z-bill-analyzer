@@ -111,7 +111,10 @@ public class Bill {
      */
     private List<Bill> sameBills;
 
-    private Boolean isMerge = false;
+    /**
+     * 是否合并了
+     */
+    private boolean isMerge = false;
 
     /**
      * 0同类相同，1银行卡

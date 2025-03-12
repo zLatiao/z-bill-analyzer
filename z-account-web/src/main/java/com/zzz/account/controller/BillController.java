@@ -39,7 +39,12 @@ public class BillController {
         return Result.success(new ParseResultVO(billService.saveBill(billInfos)));
     }
 
-    // 模拟仪表盘数据
+    @GetMapping("/getImportBillInfo")
+    public Result<ImportBillInfoVO> getImportBillInfo(@CookieValue(value = "file_session") Integer id) {
+        log.info("接收请求，id: {}", id);
+        return Result.success(billService.getImportBillInfo(id));
+    }
+
     @GetMapping("/dashboard")
     public Result<StatisticVO> getStatisticData(@CookieValue(value = "file_session") Integer id, QueryParam param) {
         log.info("接收请求，id: {}", id);
@@ -47,7 +52,6 @@ public class BillController {
         return Result.success(billService.getStatisticData(param));
     }
 
-    // 模拟支出分类数据
     @GetMapping("/categories")
     public Result<List<ExpenseCategoryVO>> getExpenseCategories(@CookieValue(value = "file_session") Integer id, QueryParam param) {
         log.info("接收请求，id: {}", id);
@@ -56,7 +60,6 @@ public class BillController {
         return Result.success(billService.getExpenseCategoryData(param));
     }
 
-    // 模拟趋势数据（支持动态区间）
     @GetMapping("/trends")
     public Result<TrendVO> getFinancialTrends(
             @CookieValue(value = "file_session") Integer id, QueryParam param) {
@@ -66,7 +69,6 @@ public class BillController {
         return Result.success(billService.getTrendsData(param));
     }
 
-    // 模拟分页交易数据
     @GetMapping("/page")
     public Result<PageResult<BillVO>> page(@CookieValue(value = "file_session") Integer id, QueryParam param) {
         param.setId(id);

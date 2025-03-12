@@ -27,6 +27,14 @@ public interface IBillService {
     List<BaseBillInfo> getBillInfos(Integer id);
 
     /**
+     * 获取todo
+     *
+     * @param id
+     * @return
+     */
+    ImportBillInfoVO getImportBillInfo(Integer id);
+
+    /**
      * 保存账单
      *
      * @param billInfos
@@ -65,4 +73,5 @@ public interface IBillService {
      * @return PageResult<BillVO>
      */
     PageResult<BillVO> getPage(QueryParam param);
+
 }

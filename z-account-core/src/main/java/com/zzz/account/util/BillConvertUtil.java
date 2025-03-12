@@ -37,7 +37,7 @@ public class BillConvertUtil {
         Bill bill = new Bill();
         bill.setAmount(new BigDecimal(amountStr));
         bill.setAmountType(AmountTypeEnum.getEnum(billDTO.getIncomeOrExpense()).getType());
-        bill.setTransactionType(billDTO.getTransactionType());
+        bill.setTransactionType(billDTO.getTransactionType() == null ? "无" : billDTO.getTransactionType());
         bill.setSource(BillSourceEnum.WX.ordinal());
         bill.setTransactionTime(billDTO.getTransactionTime());
         bill.setCounterparty(billDTO.getCounterparty());

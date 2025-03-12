@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
  * @since 2025/2/27 9:20
  */
 @Slf4j
+@Deprecated
 public class BillMergeStrategyNew {
     static List<String> cmbPaymentModeList = List.of("网联退款", "网联协议支付", "银联快捷支付", "投资理财", "网联付款交易");
 
@@ -63,7 +64,7 @@ public class BillMergeStrategyNew {
 
         List<Bill> otherBills = otherWxBillInfos.stream().flatMap(x -> x.getBills().stream()).toList();
         cmbBillInfo.getBills().stream()
-                .filter(currBill -> currBill.getIsMerge() == null || !currBill.getIsMerge())
+                .filter(sourceBill -> !sourceBill.isMerge())
                 .forEach(currBill -> otherBills.stream()
                         .filter(otherBill -> Objects.equals(currBill.getTransactionTime(), otherBill.getTransactionTime()))
                         .filter(otherBill -> Objects.equals(currBill.getAmountType(), otherBill.getAmountType()))
@@ -89,7 +90,7 @@ public class BillMergeStrategyNew {
         List<Bill> otherBills = otherAlipayInfos.stream().flatMap(x -> x.getBills().stream()).toList();
 
         alipayBillInfo.getBills().stream()
-                .filter(currBill -> currBill.getIsMerge() == null || !currBill.getIsMerge())
+                .filter(sourceBill -> !sourceBill.isMerge())
                 .forEach(currBill -> otherBills.stream()
                         .filter(otherBill -> currBill.getBillNo().equals(otherBill.getBillNo()))
                         .forEach(bill -> setMerge(bill, 0)));
@@ -261,14 +262,14 @@ public class BillMergeStrategyNew {
         List<Bill> otherBills = otherWxBillInfos.stream().flatMap(x -> x.getBills().stream()).toList();
 
         wxBillInfo.getBills().stream()
-                .filter(currBill -> currBill.getIsMerge() == null || !currBill.getIsMerge())
+                .filter(sourceBill -> !sourceBill.isMerge())
                 .forEach(currBill -> otherBills.stream()
                         .filter(otherBill -> currBill.getBillNo().equals(otherBill.getBillNo()))
                         .forEach(bill -> setMerge(bill, 0)));
     }
 
     private static void setMerge(Bill bill, Integer mergeType) {
-        bill.setIsMerge(true);
+        bill.setMerge(true);
         bill.setMergeType(mergeType);
     }
 

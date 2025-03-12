@@ -35,6 +35,11 @@ public class MockBillServiceImpl implements IBillService {
     }
 
     @Override
+    public ImportBillInfoVO getImportBillInfo(Integer id) {
+        return null;
+    }
+
+    @Override
     public Integer saveBill(List<BaseBillInfo> billInfos) {
         return 0;
     }
