@@ -15,5 +15,5 @@
     <!-- 3. 单独设置 EasyExcel 的日志级别 -->
     <logger name="com.alibaba.easyexcel" level="INFO" />
 
-    <logger name="com.z.bill" level="DEBUG" />
+    <logger name="com.z.billanalyzer" level="DEBUG" />
 </configuration>

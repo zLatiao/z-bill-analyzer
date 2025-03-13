@@ -33,7 +33,7 @@
     </appender>
 
     <!-- 核心业务日志特殊配置 -->
-    <logger name="com.z.bill" level="DEBUG" additivity="false">
+    <logger name="com.z.billanalyzer" level="DEBUG" additivity="false">
         <appender-ref ref="CONSOLE"/>
 <!--        <appender-ref ref="FILE-ROLLING"/>-->
     </logger>
