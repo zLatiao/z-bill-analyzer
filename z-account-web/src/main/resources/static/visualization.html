@@ -234,6 +234,52 @@
             right: 15px;
             color: #409EFF;
         }
+
+        /* 分页样式 */
+        .pagination-container {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .pagination {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            gap: 8px;
+        }
+
+        .page-item {
+            padding: 6px 12px;
+            border: 1px solid #e4e7ed;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .page-item a {
+            text-decoration: none;
+            color: #606266;
+        }
+
+        .page-item:hover {
+            background: #f5f7fa;
+        }
+
+        .page-item.active {
+            background: #409EFF;
+            border-color: #409EFF;
+        }
+
+        .page-item.active a {
+            color: white;
+        }
+
+        .pagination-info {
+            color: #909399;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -327,6 +373,29 @@
     <tbody id="transactionBody"></tbody>
 </table>
 
+<!-- 分页控件 -->
+<div class="pagination-container">
+    <ul class="pagination">
+        <li class="page-item">
+            <a href="javascript:void(0)" onclick="changePage(currentPage - 1)">上一页</a>
+        </li>
+        <!-- 页码动态生成 -->
+        <div id="pageNumbers"></div>
+        <li class="page-item">
+            <a href="javascript:void(0)" onclick="changePage(currentPage + 1)">下一页</a>
+        </li>
+    </ul>
+    <div class="pagination-info">
+        显示第 <span id="startRow">0</span> - <span id="endRow">0</span> 条，共 <span id="totalRecords">0</span> 条
+    </div>
+</div>
+
+<select id="pageSizeSelect" onchange="changePageSize(this.value)" style="margin-left: 15px;">
+    <option value="10">10条/页</option>
+    <option value="20">20条/页</option>
+    <option value="50">50条/页</option>
+</select>
+
 <script>
     // Spring Boot接口配置
     const API_CONFIG = {
@@ -344,8 +413,19 @@
         transactions: []
     };
 
+    let pagination = {
+        currentPage: 1,
+        pageSize: 10,
+        totalRecords: 0,
+        totalPages: 1
+
+    };
+
     // 多选功能逻辑
     let selectedOptions = new Set();
+
+    let sortField = 'transactionTime';
+    let sortOrder = 'desc';
 
     function toggleDropdown() {
         const options = document.querySelector('.dropdown-options');
@@ -446,16 +526,33 @@
                 buildUrlWithParams(API_CONFIG.dashboard, commonParams),
                 buildUrlWithParams(API_CONFIG.categories, commonParams),
                 buildUrlWithParams(API_CONFIG.trends, commonParams),
-                buildUrlWithParams(API_CONFIG.page, {
-                    ...commonParams,
-                    pageIndex: 1,
-                    pageSize: 100
-                })
+                // buildUrlWithParams(API_CONFIG.page, {
+                //     ...commonParams,
+                //     pageIndex: 1,
+                //     pageSize: 100
+                // })
             ];
 
-            const [dashboard, categories, trends, transactions] = await Promise.all(
+            const [dashboard, categories, trends] = await Promise.all(
                 requestUrls.map(url => fetch(url).then(handleResponse))
             );
+
+            // 修改分页接口请求参数
+            const transactionsResponse = await fetch(buildUrlWithParams(API_CONFIG.page, {
+                ...commonParams,
+                pageIndex: pagination.currentPage,
+                pageSize: pagination.pageSize,
+                orderBy: sortField,
+                orderType: sortOrder
+            })).then(handleResponse);
+
+            const {list, total} = await transactionsResponse;
+            console.log(list)
+            console.log(total)
+
+            // 更新分页信息
+            pagination.totalRecords = total;
+            pagination.totalPages = Math.ceil(total / pagination.pageSize);
 
             return {
                 dashboard: {
@@ -471,7 +568,7 @@
                     income: trends.incomeTrend,
                     expense: trends.expenseTrend
                 },
-                transactions: transactions.list.map(t => ({
+                transactions: list.map(t => ({
                     transactionTime: t.transactionTime,
                     transactionType: t.transactionType,
                     amountTypeStr: t.amountTypeStr,
@@ -508,6 +605,8 @@
             initCharts();
             // 初始化表格
             renderTable(appData.transactions);
+
+            renderPagination(); // 新增此行
         } catch (e) {
             alert('初始化失败: ' + e.message);
         } finally {
@@ -630,6 +729,46 @@
     `).join('');
     }
 
+    function updatePaginationInfo() {
+        document.getElementById('startRow').textContent = (pagination.currentPage - 1) * pagination.pageSize + 1;
+        document.getElementById('endRow').textContent = Math.min(pagination.currentPage * pagination.pageSize, pagination.totalRecords);
+        document.getElementById('totalRecords').textContent = pagination.totalRecords;
+    }
+
+    function renderPagination() {
+        const container = document.getElementById('pageNumbers');
+        let pages = [];
+
+        // 生成页码范围（显示最多5个页码）
+        const startPage = Math.max(1, pagination.currentPage - 2);
+        const endPage = Math.min(pagination.totalPages, startPage + 4);
+
+        for (let i = startPage; i <= endPage; i++) {
+            pages.push(`
+            <li class="page-item ${i === pagination.currentPage ? 'active' : ''}">
+                <a href="javascript:void(0)" onclick="changePage(${i})">${i}</a>
+            </li>
+        `);
+        }
+
+        container.innerHTML = pages.join('');
+        updatePaginationInfo();
+    }
+
+    function changePage(newPage) {
+        newPage = Math.max(1, Math.min(newPage, pagination.totalPages));
+        if (newPage !== pagination.currentPage) {
+            pagination.currentPage = newPage;
+            refreshData(); // 复用原有刷新逻辑
+        }
+    }
+
+    function changePageSize(size) {
+        pagination.pageSize = parseInt(size);
+        pagination.currentPage = 1;
+        refreshData();
+    }
+
     // 排序功能
     let sortDirection = 1;
 
@@ -639,6 +778,16 @@
         );
         sortDirection *= -1;
         renderTable(appData.transactions);
+    }
+
+    function sortTable(field) {
+        if (sortField === field) {
+            sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+        } else {
+            sortField = field;
+            sortOrder = 'asc';
+        }
+        refreshData();
     }
 
     // 启动应用

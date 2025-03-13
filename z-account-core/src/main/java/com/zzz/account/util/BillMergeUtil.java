@@ -174,7 +174,7 @@ public class BillMergeUtil {
                         .filter(x -> Math.abs(Duration.between(x.getTransactionTime(), transactionTime).toSeconds()) <= 60 * 5)
                         .toList();
                 if (filterBills4.isEmpty()) {
-                    log.error("找不到匹配的招商银行账单记录：{}", sourceBills);
+//                    log.error("找不到匹配的招商银行账单记录：{}", sourceBills);
                 } else if (filterBills4.size() == 1) {
                     Bill targetBill = filterBills4.getFirst();
                     setMerge(targetBill, 1);
@@ -237,7 +237,7 @@ public class BillMergeUtil {
                             .filter(x -> Math.abs(Duration.between(x.getTransactionTime(), sourceBill.getTransactionTime()).toSeconds()) <= 1)
                             .collect(Collectors.toList());
                     if (filterBills2.isEmpty()) {
-                        log.error("找不到匹配的招商银行账单记录：{}", sourceBill);
+//                        log.error("找不到匹配的招商银行账单记录：{}", sourceBill);
                     } else if (filterBills2.size() == 1) {
                         Bill targetBill = filterBills2.getFirst();
                         setMerge(targetBill, 1);
