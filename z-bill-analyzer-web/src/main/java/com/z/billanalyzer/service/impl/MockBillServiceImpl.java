@@ -3,6 +3,7 @@ package com.z.billanalyzer.service.impl;
 import com.z.billanalyzer.entity.BaseBillInfo;
 import com.z.billanalyzer.entity.Bill;
 import com.z.billanalyzer.entity.QueryParam;
+import com.z.billanalyzer.entity.vo.echarts.TrendVO;
 import com.z.billanalyzer.service.IBillService;
 import com.z.billanalyzer.entity.vo.*;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -95,5 +96,10 @@ public class MockBillServiceImpl implements IBillService {
         int total = allData.size();
 
         return new PageResult<>(allData, total);
+    }
+
+    @Override
+    public List<ExpenseSourceVO> getExpenseSources(QueryParam param) {
+        return null;
     }
 }

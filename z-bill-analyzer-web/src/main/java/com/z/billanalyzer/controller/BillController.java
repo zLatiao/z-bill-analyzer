@@ -5,6 +5,9 @@ import com.z.billanalyzer.entity.BaseBillInfo;
 import com.z.billanalyzer.entity.BillExcelParseParam;
 import com.z.billanalyzer.entity.QueryParam;
 import com.z.billanalyzer.entity.vo.*;
+import com.z.billanalyzer.entity.vo.echarts.PieDataVO;
+import com.z.billanalyzer.entity.vo.echarts.TrendVO;
+import com.z.billanalyzer.enums.AmountTypeEnum;
 import com.z.billanalyzer.parser.FileNameParser;
 import com.z.billanalyzer.service.IBillService;
 import lombok.extern.slf4j.Slf4j;
@@ -53,11 +56,15 @@ public class BillController {
     }
 
     @GetMapping("/categories")
-    public Result<List<ExpenseCategoryVO>> getExpenseCategories(@CookieValue(value = "file_session") Integer id, QueryParam param) {
+    public Result<List<PieDataVO>> getExpenseCategories(@CookieValue(value = "file_session") Integer id, QueryParam param) {
         log.info("接收请求，id: {}", id);
         param.setId(id);
+        return Result.success(billService.getExpenseCategoryData(param).stream().map(BillController::convertToPieData).toList());
+    }
 
-        return Result.success(billService.getExpenseCategoryData(param));
+
+    private static PieDataVO convertToPieData(ExpenseCategoryVO x) {
+        return new PieDataVO(x.name(), x.value());
     }
 
     @GetMapping("/trends")
@@ -75,4 +82,21 @@ public class BillController {
         return Result.success(billService.getPage(param));
     }
 
+    /**
+     * 支出来源饼图
+     *
+     * @param id
+     * @param param
+     * @return
+     */
+    @GetMapping("/sources")
+    public Result<List<PieDataVO>> getExpenseSources(@CookieValue(value = "file_session") Integer id, QueryParam param) {
+        param.setId(id);
+        param.setAmountType(AmountTypeEnum.EXPENSE.getType());
+        return Result.success(billService.getExpenseSources(param).stream().map(BillController::convertToPieData).toList());
+    }
+
+    private static PieDataVO convertToPieData(ExpenseSourceVO x) {
+        return new PieDataVO(x.name(), x.value());
+    }
 }

@@ -6,6 +6,7 @@ import com.z.billanalyzer.entity.Bill;
 import com.z.billanalyzer.entity.BillAll;
 import com.z.billanalyzer.entity.QueryParam;
 import com.z.billanalyzer.entity.vo.*;
+import com.z.billanalyzer.entity.vo.echarts.TrendVO;
 import com.z.billanalyzer.enums.AmountTypeEnum;
 import com.z.billanalyzer.enums.BillSourceEnum;
 import com.z.billanalyzer.service.IBillService;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -60,9 +62,29 @@ public class DefaultBillServiceImpl implements IBillService {
         if (param.getFilterMergeType() != null && !param.getFilterMergeType().isEmpty()) {
             stream = stream.filter(bill -> !bill.isMerge() || (bill.getMergeType() != null && !param.getFilterMergeType().contains(bill.getMergeType())));
         }
-        // TODO: 2025/3/11 加个排序筛选
-        stream = stream.sorted(Comparator.comparing(Bill::getTransactionTime));
+        if (param.getAmountType() != null) {
+            stream = stream.filter(bill -> bill.getAmountType().equals(param.getAmountType()));
+        }
+        if (param.getOrderType() != null && param.getOrderBy() != null && !param.getOrderBy().isBlank()) {
+            Comparator<Bill> comparator = getComparator(param);
+            if (comparator != null) {
+                stream = stream.sorted(comparator);
+            }
+        }
         return stream;
+    }
+
+    private static Comparator<Bill> getComparator(QueryParam param) {
+        Comparator<Bill> comparator = switch (param.getOrderBy()) {
+            case "transactionTime" -> Comparator.comparing(Bill::getTransactionTime);
+            case "amount" -> Comparator.comparing(Bill::getAmount);
+            case "transactionType" -> Comparator.comparing(Bill::getTransactionType);
+            default -> Comparator.comparing(Bill::getTransactionTime);
+        };
+        if ("desc".equals(param.getOrderType())) {
+            comparator = comparator.reversed();
+        }
+        return comparator;
     }
 
     public void getBillInfo(Integer id) {
@@ -216,5 +238,17 @@ public class DefaultBillServiceImpl implements IBillService {
         billVO.setAmountTypeStr(AmountTypeEnum.getEnum(billVO.getAmountType()).getDesc());
         billVO.setSourceStr(BillSourceEnum.getNameBy(billVO.getSource()));
         return billVO;
+    }
+
+    @Override
+    public List<ExpenseSourceVO> getExpenseSources(QueryParam param) {
+        return getBillStream(param)
+                .filter(x -> x.getSource() != null)
+                .collect(Collectors.groupingBy(Bill::getSource))
+                .entrySet().stream()
+                .map(entry -> new ExpenseSourceVO(BillSourceEnum.getNameBy(entry.getKey()), entry.getValue().stream()
+                        .map(Bill::getAmount)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add)))
+                .toList();
     }
 }

@@ -4,7 +4,9 @@ import com.z.billanalyzer.entity.BaseBillInfo;
 import com.z.billanalyzer.entity.Bill;
 import com.z.billanalyzer.entity.QueryParam;
 import com.z.billanalyzer.entity.vo.*;
+import com.z.billanalyzer.entity.vo.echarts.TrendVO;
 
+import java.util.Arrays;
 import java.util.List;
 
 public interface IBillService {
@@ -50,7 +52,7 @@ public interface IBillService {
     StatisticVO getStatisticData(QueryParam param);
 
     /**
-     * 获取支出数据
+     * 获取支出分类数据
      *
      * @param param
      * @return List<ExpenseCategoryVO>
@@ -73,4 +75,11 @@ public interface IBillService {
      */
     PageResult<BillVO> getPage(QueryParam param);
 
+    /**
+     * 获取支出来源数据
+     *
+     * @param param
+     * @return List<ExpenseCategoryVO>
+     */
+    List<ExpenseSourceVO> getExpenseSources(QueryParam param);
 }

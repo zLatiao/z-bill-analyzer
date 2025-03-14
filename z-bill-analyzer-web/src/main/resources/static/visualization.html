@@ -351,11 +351,17 @@
     </div>
 </div>
 
-<div class="chart-container">
+<div class="chart-container">  <!-- 第一行：双饼图 -->
     <div class="chart-box">
         <div id="pieChart" class="chart"></div>
     </div>
     <div class="chart-box">
+        <div id="sourceChart" class="chart"></div>
+    </div>
+</div>
+
+<div class="chart-container">  <!-- 第二行：趋势图单独成行 -->
+    <div class="chart-box" style="width:100%">
         <div id="lineChart" class="chart"></div>
     </div>
 </div>
@@ -401,6 +407,7 @@
     const API_CONFIG = {
         dashboard: '/api/bill/dashboard',
         categories: '/api/bill/categories',
+        sources: '/api/bill/sources',
         trends: '/api/bill/trends',
         page: '/api/bill/page'
     };
@@ -409,6 +416,7 @@
     let appData = {
         dashboard: {},
         categories: [],
+        sources: [],
         trends: {months: [], income: [], expense: []},
         transactions: []
     };
@@ -509,7 +517,6 @@
         return url.href;
     }
 
-    // 修改后的fetchData函数
     async function fetchData() {
         try {
             const startDate = document.getElementById('startDate').value;
@@ -525,15 +532,11 @@
             const requestUrls = [
                 buildUrlWithParams(API_CONFIG.dashboard, commonParams),
                 buildUrlWithParams(API_CONFIG.categories, commonParams),
+                buildUrlWithParams(API_CONFIG.sources, commonParams),
                 buildUrlWithParams(API_CONFIG.trends, commonParams),
-                // buildUrlWithParams(API_CONFIG.page, {
-                //     ...commonParams,
-                //     pageIndex: 1,
-                //     pageSize: 100
-                // })
             ];
 
-            const [dashboard, categories, trends] = await Promise.all(
+            const [dashboard, categories, sources, trends] = await Promise.all(
                 requestUrls.map(url => fetch(url).then(handleResponse))
             );
 
@@ -547,8 +550,6 @@
             })).then(handleResponse);
 
             const {list, total} = await transactionsResponse;
-            console.log(list)
-            console.log(total)
 
             // 更新分页信息
             pagination.totalRecords = total;
@@ -563,6 +564,7 @@
                     balance: dashboard.balance,
                 },
                 categories: categories,
+                sources: sources,
                 trends: {
                     months: trends.timeList,
                     income: trends.incomeTrend,
@@ -645,6 +647,42 @@
                 radius: ['35%', '55%'],
                 center: ['40%', '55%'],
                 data: appData.categories,
+                label: {
+                    formatter: '{b}\n¥{c}',
+                    fontSize: 12
+                },
+                emphasis: {
+                    itemStyle: {shadowBlur: 10}
+                }
+            }]
+        });
+
+        console.log(appData.sources)
+
+        // 新增支出来源饼图（复用categories数据）
+        const sourceChart = echarts.init(document.getElementById('sourceChart'));
+        sourceChart.setOption({
+            title: {
+                text: '支出来源占比',
+                left: 'center',
+                textStyle: {fontSize: 16}
+            },
+            tooltip: {
+                trigger: 'item',
+                formatter: '{b}: ¥{c} ({d}%)'
+            },
+            legend: {
+                top: 30,
+                orient: 'vertical',
+                left: 10,
+                itemWidth: 10,
+                itemHeight: 10
+            },
+            series: [{
+                type: 'pie',
+                radius: ['35%', '55%'],
+                center: ['50%', '55%'],
+                data: appData.sources,
                 label: {
                     formatter: '{b}\n¥{c}',
                     fontSize: 12

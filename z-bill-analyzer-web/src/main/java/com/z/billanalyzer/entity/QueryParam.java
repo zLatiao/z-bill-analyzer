@@ -28,6 +28,18 @@ public class QueryParam {
 
     private Integer pageSize = 100;
 
+    private Integer amountType;
+
+    /**
+     * asc升序、desc降序
+     */
+    private String orderType = "desc";
+
+    /**
+     * 排序字段
+     */
+    private String orderBy = "transactionTime";
+
     /**
      * 账单来源列表
      */
