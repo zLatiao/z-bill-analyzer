@@ -1,4 +1,4 @@
-package com.z.billanalyzer.domain.vo;
+package com.z.billanalyzer.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

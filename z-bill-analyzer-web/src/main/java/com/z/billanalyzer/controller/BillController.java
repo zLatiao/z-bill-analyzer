@@ -1,12 +1,13 @@
 package com.z.billanalyzer.controller;
 
 import com.z.billanalyzer.ParserCore;
+import com.z.billanalyzer.domain.PageResult;
 import com.z.billanalyzer.domain.bill.BaseBill;
 import com.z.billanalyzer.domain.parse.BillExcelParseParam;
-import com.z.billanalyzer.domain.QueryParam;
+import com.z.billanalyzer.domain.param.QueryParam;
 import com.z.billanalyzer.domain.vo.*;
 import com.z.billanalyzer.domain.vo.echarts.PieDataVO;
-import com.z.billanalyzer.domain.vo.echarts.TrendVO;
+import com.z.billanalyzer.domain.vo.TrendVO;
 import com.z.billanalyzer.enums.AmountTypeEnum;
 import com.z.billanalyzer.parser.FileNameParser;
 import com.z.billanalyzer.service.IBillService;

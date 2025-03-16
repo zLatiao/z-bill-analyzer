@@ -1,16 +1,15 @@
 package com.z.billanalyzer.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import com.z.billanalyzer.domain.*;
+import com.z.billanalyzer.domain.PageResult;
 import com.z.billanalyzer.domain.bill.BaseBill;
 import com.z.billanalyzer.domain.bill.BaseBillDetail;
+import com.z.billanalyzer.domain.bill.BillAll;
+import com.z.billanalyzer.domain.param.QueryParam;
 import com.z.billanalyzer.domain.vo.*;
-import com.z.billanalyzer.domain.vo.echarts.TrendVO;
 import com.z.billanalyzer.enums.AmountTypeEnum;
 import com.z.billanalyzer.enums.BillSourceEnum;
 import com.z.billanalyzer.service.IBillService;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -30,8 +29,7 @@ import static java.util.Collections.emptyList;
  * 默认实现类
  * 使用内存实现，没有持久化
  */
-@Service
-@ConditionalOnProperty(name = "bill-service", havingValue = "default", matchIfMissing = true)
+//@ConditionalOnProperty(name = "bill-service", havingValue = "default", matchIfMissing = true)
 public class DefaultBillServiceImpl implements IBillService {
     private final Map<Integer, BillAll> BILL_MAP = new ConcurrentHashMap<>();
 
