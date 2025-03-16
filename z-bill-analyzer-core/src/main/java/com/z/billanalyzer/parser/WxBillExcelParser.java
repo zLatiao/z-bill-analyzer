@@ -96,10 +96,8 @@ public class WxBillExcelParser implements IBillExcelParser<WxBill, WxBillDetail,
     }
 
     @Override
-    public List<WxBillDetail> convert(List<WxBillExcelParseResult> billRecords) {
-        List<WxBillDetail> billDetails = billRecords.stream().map(BillConvertUtil::convert).toList();
-        // TODO 2025/2/27 这里逻辑要不要改成到afterParse里去做
-        for (WxBillDetail billDetail : billDetails) {
+    public void afterParse(WxBill billInfo) {
+        for (WxBillDetail billDetail : billInfo.getBillDetails()) {
             if (billDetail.getPaymentMethod() == null) {
                 continue;
             }
@@ -109,6 +107,11 @@ public class WxBillExcelParser implements IBillExcelParser<WxBill, WxBillDetail,
                 billDetail.setBankAccountLast4Number(matcher.group(1));
             }
         }
-        return billDetails;
+        IBillExcelParser.super.afterParse(billInfo);
+    }
+
+    @Override
+    public List<WxBillDetail> convert(List<WxBillExcelParseResult> billRecords) {
+        return billRecords.stream().map(BillConvertUtil::convert).toList();
     }
 }

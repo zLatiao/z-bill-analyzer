@@ -98,10 +98,8 @@ public class AlipayBillExcelParser implements IBillExcelParser<AlipayBill, Alipa
     }
 
     @Override
-    public List<AlipayBillDetail> convert(List<AlipayBillExcelParseResult> billRecords) {
-        List<AlipayBillDetail> billDetails = billRecords.stream().map(BillConvertUtil::convert).toList();
-        // TODO 2025/2/27 这里逻辑要不要改成到afterParse里去做
-        for (AlipayBillDetail billDetail : billDetails) {
+    public void afterParse(AlipayBill billInfo) {
+        for (AlipayBillDetail billDetail : billInfo.getBillDetails()) {
             if (billDetail.getPaymentMethod() == null) {
                 continue;
             }
@@ -111,6 +109,10 @@ public class AlipayBillExcelParser implements IBillExcelParser<AlipayBill, Alipa
                 billDetail.setBankAccountLast4Number(matcher.group(1));
             }
         }
-        return billDetails;
+    }
+
+    @Override
+    public List<AlipayBillDetail> convert(List<AlipayBillExcelParseResult> billRecords) {
+        return billRecords.stream().map(BillConvertUtil::convert).toList();
     }
 }

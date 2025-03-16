@@ -10,7 +10,7 @@ import java.util.List;
  * @author z-latiao
  * @since: 2025/2/26 15:26
  */
-public interface IBillExcelParser<T extends BaseBill<C>, C extends BaseBillDetail, R> {
+public interface IBillExcelParser<T extends BaseBill<T1>, T1 extends BaseBillDetail, T2> {
     default T parse(File file) throws IOException {
         try (InputStream is1 = new BufferedInputStream(new FileInputStream(file))) {
             return parse(is1);
@@ -27,10 +27,9 @@ public interface IBillExcelParser<T extends BaseBill<C>, C extends BaseBillDetai
         }
         ByteArrayInputStream is1 = new ByteArrayInputStream(bytes);
         ByteArrayInputStream is2 = new ByteArrayInputStream(bytes);
-        List<R> billRecords = parseRecords(is1);
+        List<T2> parseResults = parseRecords(is1);
         T billInfo = parseInfo(is2);
-        List<C> billDetails = billInfo.getBillDetails();
-        List<C> convert = convert(billRecords);
+        List<T1> convert = convert(parseResults);
         billInfo.setBillDetails(convert);
         afterParse(billInfo);
         return billInfo;
@@ -39,11 +38,11 @@ public interface IBillExcelParser<T extends BaseBill<C>, C extends BaseBillDetai
     default void afterParse(T billInfo) {
     }
 
-    default List<R> parseRecords(File file) throws FileNotFoundException {
+    default List<T2> parseRecords(File file) throws FileNotFoundException {
         return parseRecords(new BufferedInputStream(new FileInputStream(file)));
     }
 
-    List<R> parseRecords(InputStream is);
+    List<T2> parseRecords(InputStream is);
 
     default T parseInfo(File file) throws FileNotFoundException {
         return parseInfo(new BufferedInputStream(new FileInputStream(file)));
@@ -51,5 +50,5 @@ public interface IBillExcelParser<T extends BaseBill<C>, C extends BaseBillDetai
 
     T parseInfo(InputStream is);
 
-   List<C> convert(List<R> billRecords);
+    List<T1> convert(List<T2> billRecords);
 }
