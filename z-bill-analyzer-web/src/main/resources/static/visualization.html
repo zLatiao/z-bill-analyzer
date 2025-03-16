@@ -349,6 +349,80 @@
             border-color: #409EFF;
             box-shadow: 0 0 4px rgba(64, 158, 255, 0.3);
         }
+        /* 分页控件容器 */
+        .pagination-container {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* 分页按钮和下拉框 */
+        .pagination {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .page-item {
+            padding: 6px 12px;
+            border: 1px solid #e4e7ed;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .page-item a {
+            text-decoration: none;
+            color: #606266;
+        }
+
+        .page-item:hover {
+            background: #f5f7fa;
+        }
+
+        .page-item.active {
+            background: #409EFF;
+            border-color: #409EFF;
+        }
+
+        .page-item.active a {
+            color: white;
+        }
+
+        /* 每页条数选择器 */
+        .pagination-size {
+            margin-left: 10px;
+        }
+
+        #pageSizeSelect {
+            padding: 8px 12px;
+            border: 1px solid #e4e7ed;
+            border-radius: 4px;
+            background: white;
+            color: #606266;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        #pageSizeSelect:hover {
+            border-color: #c0c4cc;
+        }
+
+        #pageSizeSelect:focus {
+            border-color: #409EFF;
+            box-shadow: 0 0 4px rgba(64, 158, 255, 0.3);
+        }
+
+        /* 分页信息 */
+        .pagination-info {
+            color: #909399;
+            font-size: 14px;
+            margin-left: 10px;
+        }
 
     </style>
 </head>
@@ -466,17 +540,20 @@
         </li>
     </ul>
 
+    <!-- 将 pageSizeSelect 移到分页控件中 -->
+    <div class="pagination-size">
+        <select id="pageSizeSelect" onchange="changePageSize(this.value)">
+            <option value="10">10条/页</option>
+            <option value="20">20条/页</option>
+            <option value="50">50条/页</option>
+        </select>
+    </div>
+
     <div class="pagination-info">
         显示第 <span id="startRow">0</span> - <span id="endRow">0</span> 条，共 <span id="totalRecords">0</span> 条
     </div>
 </div>
 
-<select id="pageSizeSelect" onchange="changePageSize(this.value)" style="margin-left: 15px;">
-    <option value="10">10条/页</option>
-    <option value="20">20条/页</option>
-    <option value="50">50条/页</option>
-    <option value="100">100条/页</option>
-</select>
 
 <script>
     // Spring Boot接口配置
