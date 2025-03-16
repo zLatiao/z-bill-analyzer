@@ -330,6 +330,26 @@
         .tags-container:not(:empty) + .search-input::placeholder {
             opacity: 0;
         }
+        #pageSelect {
+            padding: 8px 12px;
+            border: 1px solid #e4e7ed;
+            border-radius: 4px;
+            background: white;
+            color: #606266;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        #pageSelect:hover {
+            border-color: #c0c4cc;
+        }
+
+        #pageSelect:focus {
+            border-color: #409EFF;
+            box-shadow: 0 0 4px rgba(64, 158, 255, 0.3);
+        }
+
     </style>
 </head>
 <body>
@@ -436,14 +456,16 @@
 <div class="pagination-container">
     <ul class="pagination">
         <li class="page-item">
-            <a href="javascript:void(0)" onclick="changePage(currentPage - 1)">上一页</a>
+            <a href="javascript:void(0)" onclick="changePage(pagination.currentPage - 1)">上一页</a>
         </li>
-        <!-- 页码动态生成 -->
-        <div id="pageNumbers"></div>
+        <select id="pageSelect" onchange="changePage(this.value)" style="margin-right: 10px;">
+            <!-- 页码动态生成 -->
+        </select>
         <li class="page-item">
-            <a href="javascript:void(0)" onclick="changePage(currentPage + 1)">下一页</a>
+            <a href="javascript:void(0)" onclick="changePage(pagination.currentPage + 1)">下一页</a>
         </li>
     </ul>
+
     <div class="pagination-info">
         显示第 <span id="startRow">0</span> - <span id="endRow">0</span> 条，共 <span id="totalRecords">0</span> 条
     </div>
@@ -453,6 +475,7 @@
     <option value="10">10条/页</option>
     <option value="20">20条/页</option>
     <option value="50">50条/页</option>
+    <option value="100">100条/页</option>
 </select>
 
 <script>
@@ -835,26 +858,25 @@
     }
 
     function renderPagination() {
-        const container = document.getElementById('pageNumbers');
-        let pages = [];
+        const pageSelect = document.getElementById('pageSelect');
+        pageSelect.innerHTML = ''; // 清空现有选项
 
-        // 生成页码范围（显示最多5个页码）
-        const startPage = Math.max(1, pagination.currentPage - 2);
-        const endPage = Math.min(pagination.totalPages, startPage + 4);
-
-        for (let i = startPage; i <= endPage; i++) {
-            pages.push(`
-            <li class="page-item ${i === pagination.currentPage ? 'active' : ''}">
-                <a href="javascript:void(0)" onclick="changePage(${i})">${i}</a>
-            </li>
-        `);
+        // 生成页码范围
+        for (let i = 1; i <= pagination.totalPages; i++) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = `第 ${i} 页`;
+            if (i === pagination.currentPage) {
+                option.selected = true;
+            }
+            pageSelect.appendChild(option);
         }
 
-        container.innerHTML = pages.join('');
         updatePaginationInfo();
     }
 
     function changePage(newPage) {
+        newPage = parseInt(newPage); // 确保是数字类型
         newPage = Math.max(1, Math.min(newPage, pagination.totalPages));
         if (newPage !== pagination.currentPage) {
             pagination.currentPage = newPage;
