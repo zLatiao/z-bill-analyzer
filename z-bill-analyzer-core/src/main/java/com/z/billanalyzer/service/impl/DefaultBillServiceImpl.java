@@ -29,7 +29,6 @@ import static java.util.Collections.emptyList;
  * 默认实现类
  * 使用内存实现，没有持久化
  */
-//@ConditionalOnProperty(name = "bill-service", havingValue = "default", matchIfMissing = true)
 public class DefaultBillServiceImpl implements IBillService {
     private final Map<Integer, BillAll> BILL_MAP = new ConcurrentHashMap<>();
 
