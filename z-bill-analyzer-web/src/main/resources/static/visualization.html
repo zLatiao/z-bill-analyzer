@@ -280,6 +280,17 @@
             color: #909399;
             font-size: 14px;
         }
+
+        .search-input::placeholder {
+            color: #c0c4cc;
+            transition: opacity 0.3s ease; /* 添加过渡效果 */
+        }
+
+        /* 当有选中项时隐藏placeholder */
+        .tags-container:not(:empty) + .search-input::placeholder {
+            opacity: 0; /* 保留占位符空间但隐藏文字 */
+        }
+
     </style>
 </head>
 <body>
@@ -297,7 +308,10 @@
                 <div class="tags-container">
                     <!-- 已选标签动态插入到这里 -->
                 </div>
-                <input type="text" class="search-input" placeholder="选择来源" oninput="filterOptions(this.value)">
+                <input type="text"
+                       class="search-input"
+                       placeholder="选择来源"
+                       id="searchInput" oninput="filterOptions(this.value)">
             </div>
 
             <!-- 下拉选项容器 -->
@@ -454,6 +468,10 @@
         }
 
         updateSelectedTags();
+
+        // 新增：当有选择时隐藏placeholder
+        const searchInput = document.getElementById('searchInput');
+        searchInput.placeholder = selectedOptions.size > 0 ? '' : '选择来源';
     }
 
     function updateSelectedTags() {
@@ -478,6 +496,10 @@
         option.selected = false;
         document.querySelector(`.dropdown-options li[onclick*="${value}"]`).classList.remove('selected');
         updateSelectedTags();
+
+        // 新增：当没有选择时恢复placeholder
+        const searchInput = document.getElementById('searchInput');
+        searchInput.placeholder = selectedOptions.size > 0 ? '' : '选择来源';
     }
 
     function filterOptions(keyword) {
