@@ -290,7 +290,46 @@
         .tags-container:not(:empty) + .search-input::placeholder {
             opacity: 0; /* 保留占位符空间但隐藏文字 */
         }
+        /* 原有.date-range和新增高度设置 */
+        .date-range, .selected-tags {
+            height: 40px !important; /* 与时间筛选框统一高度 */
+            box-sizing: border-box; /* 确保内边距不影响总高度 */
+        }
+        .tags-container {
+            max-height: 38px; /* 略小于父容器留出边距 */
+            overflow-y: auto; /* 垂直滚动而非撑开高度 */
+            flex-wrap: wrap; /* 允许换行但限制高度 */
+            align-items: center; /* 垂直居中 */
+        }
+        /* 当有标签时隐藏placeholder */
+        .tags-container:not(:empty) + .search-input::placeholder {
+            opacity: 0;
+        }
+        .tag {
+            margin: 2px 4px; /* 减少间距 */
+            padding: 4px 8px; /* 缩小内边距 */
+            font-size: 12px; /* 调小字体 */
+            max-width: 120px; /* 限制单标签宽度 */
+        }
+        /* 统一筛选控件高度 */
+        .date-range, .custom-multiselect .selected-tags {
+            height: 40px;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
 
+        /* 多选框标签容器 */
+        .tags-container {
+            max-height: 36px;
+            overflow-y: auto;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        /* 隐藏无选择时的提示 */
+        .tags-container:not(:empty) + .search-input::placeholder {
+            opacity: 0;
+        }
     </style>
 </head>
 <body>
