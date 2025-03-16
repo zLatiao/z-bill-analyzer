@@ -1,31 +1,22 @@
 package com.z.billanalyzer.util;
 
-import com.z.billanalyzer.domain.BillDetail;
-import com.z.billanalyzer.domain.parse.AlipayBillParseResult;
-import com.z.billanalyzer.domain.parse.CmbBillParseResult;
-import com.z.billanalyzer.domain.parse.WxBillParseResult;
+import com.z.billanalyzer.domain.*;
+import com.z.billanalyzer.domain.parse.AlipayBillExcelParseResult;
+import com.z.billanalyzer.domain.parse.CmbBillExcelParseResult;
+import com.z.billanalyzer.domain.parse.WxBillExcelParseResult;
 import com.z.billanalyzer.enums.BillSourceEnum;
 import com.z.billanalyzer.enums.AmountTypeEnum;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 public class BillConvertUtil {
 
-    public static List<BillDetail> convert(List<?> bills) {
-        return bills.stream().map(bill -> switch (bill) {
-            case WxBillParseResult wxBillParseResult -> convert(wxBillParseResult);
-            case AlipayBillParseResult alipayBillParseResult -> convert(alipayBillParseResult);
-            case CmbBillParseResult cmbBillParseResult -> convert(cmbBillParseResult);
-            case null, default ->
-                    throw new RuntimeException("wrong type: " + bills.getClass());
-        }).toList();
-    }
-
     // todo 解析的时候就把银行卡号解析出来
-    public static BillDetail convert(WxBillParseResult billDTO) {
+    public static WxBillDetail convert(WxBillExcelParseResult billDTO) {
         String billAmount = billDTO.getAmount();
         String amountStr;
         if (billAmount.contains("¥")) {
@@ -34,7 +25,7 @@ public class BillConvertUtil {
             amountStr = billAmount.substring(billAmount.indexOf('￥') + 1).replace(",", "");
         }
 
-        BillDetail billDetail = new BillDetail();
+        WxBillDetail billDetail = new WxBillDetail();
         billDetail.setAmount(new BigDecimal(amountStr));
         billDetail.setAmountType(AmountTypeEnum.getEnum(billDTO.getIncomeOrExpense()).getType());
         billDetail.setTransactionType(billDTO.getTransactionType() == null ? "无" : billDTO.getTransactionType());
@@ -42,21 +33,21 @@ public class BillConvertUtil {
         billDetail.setTransactionTime(billDTO.getTransactionTime());
         billDetail.setCounterparty(billDTO.getCounterparty());
         billDetail.setProduct(billDTO.getProduct());
-        billDetail.setPaymentMode(billDTO.getPaymentMethod());
+        billDetail.setPaymentMethod(billDTO.getPaymentMethod());
         billDetail.setTransactionStatus(billDTO.getCurrentStatus());
-        billDetail.setBillNo(billDTO.getTransactionNo());
+        billDetail.setTransactionNo(billDTO.getTransactionNo());
         billDetail.setMerchantNo(billDTO.getMerchantNo());
         billDetail.setRemark(billDTO.getRemark());
         return billDetail;
     }
 
-    public static List<BillDetail> convertListByWx(List<WxBillParseResult> billDTOList) {
+    public static List<WxBillDetail> convertListByWx(List<WxBillExcelParseResult> billDTOList) {
         return billDTOList.stream().map(BillConvertUtil::convert).toList();
     }
 
 
-    public static BillDetail convert(AlipayBillParseResult billDTO) {
-        BillDetail billDetail = new BillDetail();
+    public static AlipayBillDetail convert(AlipayBillExcelParseResult billDTO) {
+        AlipayBillDetail billDetail = new AlipayBillDetail();
         billDetail.setAmount(billDTO.getAmount());
         billDetail.setAmountType(AmountTypeEnum.getEnum(billDTO.getIncomeOrExpense()).getType());
         billDetail.setTransactionType(billDTO.getTransactionCategory());
@@ -64,15 +55,15 @@ public class BillConvertUtil {
         billDetail.setTransactionTime(billDTO.getTransactionTime());
         billDetail.setCounterparty(billDTO.getCounterparty());
         billDetail.setProduct(billDTO.getProduct());
-        billDetail.setPaymentMode(billDTO.getPaymentMethod());
+        billDetail.setPaymentMethod(billDTO.getPaymentMethod());
         billDetail.setTransactionStatus(billDTO.getTransactionStatus());
-        billDetail.setBillNo(billDTO.getTransactionOrderId());
+        billDetail.setTransactionNo(billDTO.getTransactionOrderId());
         billDetail.setMerchantNo(billDTO.getMerchantOrderId());
         billDetail.setRemark(billDTO.getRemark());
         return billDetail;
     }
 
-    public static List<BillDetail> convertListByAlipay(List<AlipayBillParseResult> billDTOList) {
+    public static List<AlipayBillDetail> convertListByAlipay(List<AlipayBillExcelParseResult> billDTOList) {
         return billDTOList.stream().map(BillConvertUtil::convert).toList();
     }
 
@@ -86,8 +77,8 @@ public class BillConvertUtil {
      * @param billDTO
      * @return
      */
-    public static BillDetail convert(CmbBillParseResult billDTO) {
-        BillDetail billDetail = new BillDetail();
+    public static CmbBillDetail convert(CmbBillExcelParseResult billDTO) {
+        CmbBillDetail billDetail = new CmbBillDetail();
         if (billDTO.getIncome() != null) {
             billDetail.setAmount(billDTO.getIncome());
             billDetail.setAmountType(AmountTypeEnum.INCOME.getType());
@@ -107,7 +98,7 @@ public class BillConvertUtil {
         return billDetail;
     }
 
-    public static List<BillDetail> convertListByCmb(List<CmbBillParseResult> billDTOList) {
+    public static List<CmbBillDetail> convertListByCmb(List<CmbBillExcelParseResult> billDTOList) {
         return billDTOList.stream().map(BillConvertUtil::convert).toList();
     }
 }

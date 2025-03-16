@@ -12,7 +12,7 @@ import java.util.List;
  */
 @Data
 @Accessors(chain = true)
-public class BaseBill {
+public class BaseBill<T extends BaseBillDetail> {
     /**
      * 文件名
      */
@@ -34,32 +34,12 @@ public class BaseBill {
     private LocalDateTime exportTime;
 
     /**
-     * 账单
+     * 账单明细
      */
-    private List<BillDetail> billDetails;
+    private List<T> billDetails;
 
     /**
      * 是否银行账单
      */
     private Boolean isBankBill;
-
-//    public BaseBillInfo setStartTime(LocalDateTime startTime) {
-//        this.startTime = startTime;
-//        return this;
-//    }
-//
-//    public BaseBillInfo setEndTime(LocalDateTime endTime) {
-//        this.endTime = endTime;
-//        return this;
-//    }
-//
-//    public BaseBillInfo setExportTime(LocalDateTime exportTime) {
-//        this.exportTime = exportTime;
-//        return this;
-//    }
-//
-//    public BaseBillInfo setBills(List<Bill> bills) {
-//        this.bills = bills;
-//        return this;
-//    }
 }

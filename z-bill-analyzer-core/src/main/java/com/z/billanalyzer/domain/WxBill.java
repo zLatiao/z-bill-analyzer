@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Accessors(chain = true)
-public class WxBill extends BaseBill {
+public class WxBill extends BaseBill<WxBillDetail> {
     /**
      * 微信昵称
      */

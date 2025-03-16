@@ -3,8 +3,10 @@ package com.z.billanalyzer.parser;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import com.z.billanalyzer.domain.CmbBill;
-import com.z.billanalyzer.domain.parse.CmbBillParseResult;
+import com.z.billanalyzer.domain.CmbBillDetail;
+import com.z.billanalyzer.domain.parse.CmbBillExcelParseResult;
 import com.z.billanalyzer.listener.BillExcelListener;
+import com.z.billanalyzer.util.BillConvertUtil;
 import com.z.billanalyzer.util.ReUtil;
 
 import java.io.InputStream;
@@ -25,7 +27,7 @@ import static com.z.billanalyzer.constant.GlobalConstant.DATE_TIME_FORMATTER;
  * @author z-latiao
  * @since 2025/2/26 17:43
  */
-public class CmbBillExcelParser implements IBillExcelParser<CmbBill, CmbBillParseResult> {
+public class CmbBillExcelParser implements IBillExcelParser<CmbBill, CmbBillDetail, CmbBillExcelParseResult> {
 
     private static final List<Integer> excelReadNumbers = List.of(1, 2, 3, 4, 5);
 
@@ -49,16 +51,16 @@ public class CmbBillExcelParser implements IBillExcelParser<CmbBill, CmbBillPars
 
 
     @Override
-    public List<CmbBillParseResult> parseRecords(InputStream is) {
-        List<CmbBillParseResult> cmbBillParseResults = EasyExcel
+    public List<CmbBillExcelParseResult> parseRecords(InputStream is) {
+        List<CmbBillExcelParseResult> cmbBillExcelParseResults = EasyExcel
                 .read(is)
-                .head(CmbBillParseResult.class)
+                .head(CmbBillExcelParseResult.class)
                 .excelType(ExcelTypeEnum.CSV)
                 .headRowNumber(7)
                 .sheet()
                 .doReadSync();
         // 最后两行是收入合计、支出合计
-        return cmbBillParseResults.subList(0, cmbBillParseResults.size() - 2);
+        return cmbBillExcelParseResults.subList(0, cmbBillExcelParseResults.size() - 2);
     }
 
     @Override
@@ -100,5 +102,10 @@ public class CmbBillExcelParser implements IBillExcelParser<CmbBill, CmbBillPars
                 billInfo.getBillDetails().forEach(x -> x.setBankAccountLast4Number(group));
             }
         }
+    }
+
+    @Override
+    public List<CmbBillDetail> convert(List<CmbBillExcelParseResult> billRecords) {
+        return billRecords.stream().map(BillConvertUtil::convert).toList();
     }
 }

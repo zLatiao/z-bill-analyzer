@@ -3,11 +3,12 @@ package com.z.billanalyzer.parser;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import com.z.billanalyzer.constant.GlobalConstant;
-import com.z.billanalyzer.domain.BillDetail;
 import com.z.billanalyzer.domain.WxBill;
-import com.z.billanalyzer.domain.parse.WxBillParseResult;
+import com.z.billanalyzer.domain.WxBillDetail;
+import com.z.billanalyzer.domain.parse.WxBillExcelParseResult;
 import com.z.billanalyzer.enums.BankEnum;
 import com.z.billanalyzer.listener.BillExcelListener;
+import com.z.billanalyzer.util.BillConvertUtil;
 import com.z.billanalyzer.util.ReUtil;
 
 import java.io.InputStream;
@@ -24,7 +25,7 @@ import java.util.regex.Pattern;
  * @author z-latiao
  * @since 2025/2/26 15:28
  */
-public class WxBillExcelParser implements IBillExcelParser<WxBill, WxBillParseResult> {
+public class WxBillExcelParser implements IBillExcelParser<WxBill, WxBillDetail, WxBillExcelParseResult> {
 
     private static final List<Integer> excelReadNumbers = List.of(1, 2, 3, 4, 6, 7, 8, 9);
 
@@ -50,11 +51,11 @@ public class WxBillExcelParser implements IBillExcelParser<WxBill, WxBillParseRe
     );
 
     @Override
-    public List<WxBillParseResult> parseRecords(InputStream is) {
+    public List<WxBillExcelParseResult> parseRecords(InputStream is) {
         // todo 这里可能要加个文件名判断是新的还是旧的
         return EasyExcel.read(is)
                 .autoCloseStream(false)
-                .head(WxBillParseResult.class)
+                .head(WxBillExcelParseResult.class)
 //                .charset(Charset.forName("GBK"))
                 .excelType(ExcelTypeEnum.CSV)
                 .headRowNumber(17)
@@ -95,16 +96,16 @@ public class WxBillExcelParser implements IBillExcelParser<WxBill, WxBillParseRe
     }
 
     @Override
-    public List<BillDetail> convert(List<WxBillParseResult> billRecords) {
-        List<BillDetail> billDetails = IBillExcelParser.super.convert(billRecords);
+    public List<WxBillDetail> convert(List<WxBillExcelParseResult> billRecords) {
+        List<WxBillDetail> billDetails = billRecords.stream().map(BillConvertUtil::convert).toList();
         // TODO 2025/2/27 这里逻辑要不要改成到afterParse里去做
-        for (BillDetail billDetail : billDetails) {
-            if (billDetail.getPaymentMode() == null) {
+        for (WxBillDetail billDetail : billDetails) {
+            if (billDetail.getPaymentMethod() == null) {
                 continue;
             }
-            Matcher matcher = GlobalConstant.CMB_PATTERN.matcher(billDetail.getPaymentMode());
+            Matcher matcher = GlobalConstant.CMB_PATTERN.matcher(billDetail.getPaymentMethod());
             if (matcher.find()) {
-                billDetail.setBank(BankEnum.CMB);
+                billDetail.setPaymentModeBank(BankEnum.CMB);
                 billDetail.setBankAccountLast4Number(matcher.group(1));
             }
         }

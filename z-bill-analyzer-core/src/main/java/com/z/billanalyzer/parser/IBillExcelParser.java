@@ -1,8 +1,7 @@
 package com.z.billanalyzer.parser;
 
-import com.z.billanalyzer.domain.BillDetail;
-import com.z.billanalyzer.util.BillConvertUtil;
 import com.z.billanalyzer.domain.BaseBill;
+import com.z.billanalyzer.domain.BaseBillDetail;
 
 import java.io.*;
 import java.util.List;
@@ -11,7 +10,7 @@ import java.util.List;
  * @author z-latiao
  * @since: 2025/2/26 15:26
  */
-public interface IBillExcelParser<T extends BaseBill, R> {
+public interface IBillExcelParser<T extends BaseBill<C>, C extends BaseBillDetail, R> {
     default T parse(File file) throws IOException {
         try (InputStream is1 = new BufferedInputStream(new FileInputStream(file))) {
             return parse(is1);
@@ -30,7 +29,9 @@ public interface IBillExcelParser<T extends BaseBill, R> {
         ByteArrayInputStream is2 = new ByteArrayInputStream(bytes);
         List<R> billRecords = parseRecords(is1);
         T billInfo = parseInfo(is2);
-        billInfo.setBillDetails(convert(billRecords));
+        List<C> billDetails = billInfo.getBillDetails();
+        List<C> convert = convert(billRecords);
+        billInfo.setBillDetails(convert);
         afterParse(billInfo);
         return billInfo;
     }
@@ -50,7 +51,5 @@ public interface IBillExcelParser<T extends BaseBill, R> {
 
     T parseInfo(InputStream is);
 
-    default List<BillDetail> convert(List<R> billRecords) {
-        return BillConvertUtil.convert(billRecords);
-    }
+   List<C> convert(List<R> billRecords);
 }

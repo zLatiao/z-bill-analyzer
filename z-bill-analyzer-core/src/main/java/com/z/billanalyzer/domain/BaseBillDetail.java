@@ -8,27 +8,18 @@ import lombok.experimental.Accessors;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
- * <p>
- * 账单明细
- * </p>
+ * 账单明细基类
  *
  * @author zzz
- * @since 2024-05-23
+ * @since 2025/3/16 19:09
  */
 @Getter
 @Setter
 @Accessors(chain = true)
 @ToString
-public class BillDetail {
-
-    /**
-     * id
-     */
-//    private Integer id;
-
+public class BaseBillDetail {
     /**
      * 金额
      */
@@ -60,56 +51,9 @@ public class BillDetail {
     private String counterparty;
 
     /**
-     * 商品
-     */
-    private String product;
-
-    /**
-     * 支付方式
-     */
-    private String paymentMode;
-
-    /**
-     * 交易状态
-     */
-    private String transactionStatus;
-
-    /**
-     * 账单单号
-     */
-    private String billNo;
-
-    /**
-     * 商家单号
-     */
-    private String merchantNo;
-
-    /**
      * 备注
      */
     private String remark;
-
-    /**
-     * 账单导入记录ID
-     */
-//    private Integer importRecordId;
-
-    /**
-     * todo 名称暂定
-     * 银行卡号后4位，微信和支付宝表示用银行卡支付的卡号，银行表示自身的卡号
-     */
-    private String bankAccountLast4Number;
-
-    /**
-     * todo 名称暂定
-     * 银行名称
-     */
-    private BankEnum bank;
-
-    /**
-     * 相同的账单
-     */
-    private List<BillDetail> sameBillDetails;
 
     /**
      * 是否合并了
@@ -122,7 +66,8 @@ public class BillDetail {
     private Integer mergeType;
 
     /**
-     * 招商银行还有这个余额
+     * todo 名称暂定
+     * 银行卡号后4位，微信和支付宝表示用银行卡支付的卡号，银行表示自身的卡号
      */
-    private BigDecimal balance;
+    private String bankAccountLast4Number;
 }

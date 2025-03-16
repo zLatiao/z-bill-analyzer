@@ -4,10 +4,11 @@ import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import com.z.billanalyzer.constant.GlobalConstant;
 import com.z.billanalyzer.domain.AlipayBill;
-import com.z.billanalyzer.domain.parse.AlipayBillParseResult;
-import com.z.billanalyzer.domain.BillDetail;
+import com.z.billanalyzer.domain.AlipayBillDetail;
+import com.z.billanalyzer.domain.parse.AlipayBillExcelParseResult;
 import com.z.billanalyzer.enums.BankEnum;
 import com.z.billanalyzer.listener.BillExcelListener;
+import com.z.billanalyzer.util.BillConvertUtil;
 import com.z.billanalyzer.util.ReUtil;
 
 import java.io.InputStream;
@@ -27,7 +28,7 @@ import static com.z.billanalyzer.constant.GlobalConstant.DATE_TIME_FORMATTER;
  * @author z-latiao
  * @since 2025/2/26 15:58
  */
-public class AlipayBillExcelParser implements IBillExcelParser<AlipayBill, AlipayBillParseResult> {
+public class AlipayBillExcelParser implements IBillExcelParser<AlipayBill, AlipayBillDetail, AlipayBillExcelParseResult> {
     private static final List<Integer> excelReadNumbers = List.of(2, 3, 4, 5, 6, 7, 8, 9, 10);
 
     private static final int excelStopNumber = 10;
@@ -54,9 +55,9 @@ public class AlipayBillExcelParser implements IBillExcelParser<AlipayBill, Alipa
     );
 
     @Override
-    public List<AlipayBillParseResult> parseRecords(InputStream is) {
+    public List<AlipayBillExcelParseResult> parseRecords(InputStream is) {
         return EasyExcel.read(is)
-                .head(AlipayBillParseResult.class)
+                .head(AlipayBillExcelParseResult.class)
                 .autoCloseStream(false)
                 .charset(Charset.forName("GBK"))
                 .excelType(ExcelTypeEnum.CSV)
@@ -97,16 +98,16 @@ public class AlipayBillExcelParser implements IBillExcelParser<AlipayBill, Alipa
     }
 
     @Override
-    public List<BillDetail> convert(List<AlipayBillParseResult> billRecords) {
-        List<BillDetail> billDetails = IBillExcelParser.super.convert(billRecords);
+    public List<AlipayBillDetail> convert(List<AlipayBillExcelParseResult> billRecords) {
+        List<AlipayBillDetail> billDetails = billRecords.stream().map(BillConvertUtil::convert).toList();
         // TODO 2025/2/27 这里逻辑要不要改成到afterParse里去做
-        for (BillDetail billDetail : billDetails) {
-            if (billDetail.getPaymentMode() == null) {
+        for (AlipayBillDetail billDetail : billDetails) {
+            if (billDetail.getPaymentMethod() == null) {
                 continue;
             }
-            Matcher matcher = GlobalConstant.CMB_PATTERN.matcher(billDetail.getPaymentMode());
+            Matcher matcher = GlobalConstant.CMB_PATTERN.matcher(billDetail.getPaymentMethod());
             if (matcher.find()) {
-                billDetail.setBank(BankEnum.CMB);
+                billDetail.setPaymentModeBank(BankEnum.CMB);
                 billDetail.setBankAccountLast4Number(matcher.group(1));
             }
         }

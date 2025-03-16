@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class ParserCore {
-    private static EnumMap<BillSourceEnum, IBillExcelParser<? extends BaseBill, ?>> enumMap = new EnumMap<>(BillSourceEnum.class);
+    private static EnumMap<BillSourceEnum, IBillExcelParser<? extends BaseBill<?>, ?, ?>> enumMap = new EnumMap<>(BillSourceEnum.class);
 
     static {
         enumMap.put(BillSourceEnum.WX, new WxBillExcelParser());
@@ -24,8 +24,8 @@ public class ParserCore {
         enumMap.put(BillSourceEnum.CMB, new CmbBillExcelParser());
     }
 
-    public static List<BaseBill> parse(List<BillExcelParseParam> params) {
-        List<BaseBill> billInfos = params.stream()
+    public static List<BaseBill<?>> parse(List<BillExcelParseParam> params) {
+        List<BaseBill<?>> billInfos = params.stream()
                 .map(param -> enumMap.get(param.billSourceEnum()).parse(param.inputStream()).setFileName(param.fileName()))
                 .collect(Collectors.toList());
         BillMergeUtil.merge(billInfos);

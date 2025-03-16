@@ -182,7 +182,7 @@
         files.forEach(file => formData.append('files', file));
 
         try {
-            const response = await fetch('/api/billDetail/parse', {
+            const response = await fetch('/api/bill/parse', {
                 method: 'POST',
                 body: formData,
                 headers: {

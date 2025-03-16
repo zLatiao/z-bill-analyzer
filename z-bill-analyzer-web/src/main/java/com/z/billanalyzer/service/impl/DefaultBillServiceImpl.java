@@ -1,10 +1,7 @@
 package com.z.billanalyzer.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import com.z.billanalyzer.domain.BaseBill;
-import com.z.billanalyzer.domain.BillDetail;
-import com.z.billanalyzer.domain.BillAll;
-import com.z.billanalyzer.domain.QueryParam;
+import com.z.billanalyzer.domain.*;
 import com.z.billanalyzer.domain.vo.*;
 import com.z.billanalyzer.domain.vo.echarts.TrendVO;
 import com.z.billanalyzer.enums.AmountTypeEnum;
@@ -43,12 +40,12 @@ public class DefaultBillServiceImpl implements IBillService {
     }
 
     @Override
-    public List<BillDetail> getBills(Integer id) {
+    public List<? extends BaseBillDetail> getBills(Integer id) {
         return getBill(id).billDetails();
     }
 
-    public Stream<BillDetail> getBillStream(QueryParam param) {
-        Stream<BillDetail> stream = getBill(param.getId()).billDetails().stream();
+    public Stream<? extends BaseBillDetail> getBillStream(QueryParam param) {
+        Stream<? extends BaseBillDetail> stream = getBill(param.getId()).billDetails().stream();
         if (param.getStartDate() != null) {
             stream = stream.filter(bill -> !bill.getTransactionTime().toLocalDate().isBefore(param.getStartDate()));
         }
@@ -65,7 +62,7 @@ public class DefaultBillServiceImpl implements IBillService {
             stream = stream.filter(bill -> bill.getAmountType().equals(param.getAmountType()));
         }
         if (param.getOrderType() != null && param.getOrderBy() != null && !param.getOrderBy().isBlank()) {
-            Comparator<BillDetail> comparator = getComparator(param);
+            Comparator<BaseBillDetail> comparator = getComparator(param);
             if (comparator != null) {
                 stream = stream.sorted(comparator);
             }
@@ -73,12 +70,12 @@ public class DefaultBillServiceImpl implements IBillService {
         return stream;
     }
 
-    private static Comparator<BillDetail> getComparator(QueryParam param) {
-        Comparator<BillDetail> comparator = switch (param.getOrderBy()) {
-            case "transactionTime" -> Comparator.comparing(BillDetail::getTransactionTime);
-            case "amount" -> Comparator.comparing(BillDetail::getAmount);
-            case "transactionType" -> Comparator.comparing(BillDetail::getTransactionType);
-            default -> Comparator.comparing(BillDetail::getTransactionTime);
+    private static Comparator<BaseBillDetail> getComparator(QueryParam param) {
+        Comparator<BaseBillDetail> comparator = switch (param.getOrderBy()) {
+            case "transactionTime" -> Comparator.comparing(BaseBillDetail::getTransactionTime);
+            case "amount" -> Comparator.comparing(BaseBillDetail::getAmount);
+            case "transactionType" -> Comparator.comparing(BaseBillDetail::getTransactionType);
+            default -> Comparator.comparing(BaseBillDetail::getTransactionTime);
         };
         if ("desc".equals(param.getOrderType())) {
             comparator = comparator.reversed();
@@ -93,11 +90,11 @@ public class DefaultBillServiceImpl implements IBillService {
     @Override
     public ImportBillInfoVO getImportBillInfo(Integer id) {
         BillAll billAll = getBill(id);
-        List<BaseBill> baseBills = billAll.billInfos();
-        List<BillDetail> billDetails = billAll.billDetails();
+        List<BaseBill<?>> baseBills = billAll.billInfos();
+        List<? extends BaseBillDetail> billDetails = billAll.billDetails();
 
         List<String> fileNames = baseBills.stream().map(BaseBill::getFileName).distinct().toList();
-        List<String> transactionTypes = billDetails.stream().map(BillDetail::getTransactionType).distinct().toList();
+        List<String> transactionTypes = billDetails.stream().map(BaseBillDetail::getTransactionType).distinct().toList();
         // todo 这里现在取得是账单信息的起止时间，而不是账单明细的起止时间
         LocalDate startDate = baseBills.stream()
                 .map(BaseBill::getStartTime)
@@ -114,12 +111,12 @@ public class DefaultBillServiceImpl implements IBillService {
     }
 
     @Override
-    public List<BaseBill> getBillInfos(Integer id) {
+    public List<BaseBill<?>> getBillInfos(Integer id) {
         return getBill(id).billInfos();
     }
 
     @Override
-    public Integer saveBill(List<BaseBill> billInfos) {
+    public Integer saveBill(List<BaseBill<?>> billInfos) {
         int id = ID_COUNTER.getAndIncrement();
         BILL_MAP.put(id, new BillAll(billInfos, billInfos.stream().flatMap(x -> x.getBillDetails().stream()).toList()));
         return id;
@@ -127,24 +124,24 @@ public class DefaultBillServiceImpl implements IBillService {
 
     @Override
     public StatisticVO getStatisticData(QueryParam param) {
-        List<BillDetail> incomeBillListDetail = getBillStream(param)
+        List<? extends BaseBillDetail> incomeBillListDetail = getBillStream(param)
                 .filter(bill -> AmountTypeEnum.INCOME.getType().equals(bill.getAmountType()))
                 .toList();
 
         int incomeBillCnt = incomeBillListDetail.size();
 
         BigDecimal totalIncome = incomeBillListDetail.stream()
-                .map(BillDetail::getAmount)
+                .map(BaseBillDetail::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        List<BillDetail> expenseBillListDetail = getBillStream(param)
+        List<? extends BaseBillDetail> expenseBillListDetail = getBillStream(param)
                 .filter(bill -> AmountTypeEnum.EXPENSE.getType().equals(bill.getAmountType()))
                 .toList();
 
         int expenseBillCnt = expenseBillListDetail.size();
 
         BigDecimal totalExpense = expenseBillListDetail.stream()
-                .map(BillDetail::getAmount)
+                .map(BaseBillDetail::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal balance = totalIncome.subtract(totalExpense);
@@ -156,16 +153,16 @@ public class DefaultBillServiceImpl implements IBillService {
     public List<ExpenseCategoryVO> getExpenseCategoryData(QueryParam param) {
         List<ExpenseCategoryVO> list = getBillStream(param)
                 .filter(bill -> AmountTypeEnum.EXPENSE.getType().equals(bill.getAmountType()))
-                .collect(Collectors.groupingBy(BillDetail::getTransactionType))
+                .collect(Collectors.groupingBy(BaseBillDetail::getTransactionType))
                 .entrySet().stream()
-                .map(x -> new ExpenseCategoryVO(x.getKey(), x.getValue().stream().map(BillDetail::getAmount).reduce(BigDecimal::add).orElse(BigDecimal.ZERO)))
+                .map(x -> new ExpenseCategoryVO(x.getKey(), x.getValue().stream().map(BaseBillDetail::getAmount).reduce(BigDecimal::add).orElse(BigDecimal.ZERO)))
                 .toList();
         return list;
     }
 
     @Override
     public TrendVO getTrendsData(QueryParam param) {
-        List<BillDetail> billDetails = getBillStream(param).toList();
+        List<? extends BaseBillDetail> billDetails = getBillStream(param).toList();
         if (billDetails.isEmpty()) {
             return new TrendVO(emptyList(), emptyList(), emptyList());
         }
@@ -186,19 +183,19 @@ public class DefaultBillServiceImpl implements IBillService {
 
         while (!min.isAfter(max)) {
             LocalDate finalMin = min;
-            List<BillDetail> currBillDetails = billDetails.stream()
+            List<? extends BaseBillDetail> currBillDetails = billDetails.stream()
                     .filter(bill -> bill.getTransactionTime().getYear() == finalMin.getYear())
                     .filter(bill -> bill.getTransactionTime().getMonthValue() == finalMin.getMonthValue())
                     .toList();
 
             BigDecimal income = currBillDetails.stream()
                     .filter(bill -> AmountTypeEnum.INCOME.getType().equals(bill.getAmountType()))
-                    .map(BillDetail::getAmount)
+                    .map(BaseBillDetail::getAmount)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
             BigDecimal expense = currBillDetails.stream()
                     .filter(bill -> AmountTypeEnum.EXPENSE.getType().equals(bill.getAmountType()))
-                    .map(BillDetail::getAmount)
+                    .map(BaseBillDetail::getAmount)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
             timeList.add(String.format("%d-%02d", min.getYear(), min.getMonthValue()));
@@ -216,7 +213,7 @@ public class DefaultBillServiceImpl implements IBillService {
         Integer pageIndex = param.getPageIndex();
         Integer pageSize = param.getPageSize();
 
-        List<BillDetail> billDetails = getBillStream(param).toList();
+        List<? extends BaseBillDetail> billDetails = getBillStream(param).toList();
 
         int total = billDetails.size();
         int fromIndex = (pageIndex - 1) * pageSize;
@@ -232,7 +229,7 @@ public class DefaultBillServiceImpl implements IBillService {
         return new PageResult<>(pageData, total);
     }
 
-    private BillDetailVO convertToVo(BillDetail billDetail) {
+    private BillDetailVO convertToVo(BaseBillDetail billDetail) {
         BillDetailVO billVO = BeanUtil.copyProperties(billDetail, BillDetailVO.class);
         billVO.setAmountTypeStr(AmountTypeEnum.getEnum(billVO.getAmountType()).getDesc());
         billVO.setSourceStr(BillSourceEnum.getNameBy(billVO.getSource()));
@@ -243,10 +240,10 @@ public class DefaultBillServiceImpl implements IBillService {
     public List<ExpenseSourceVO> getExpenseSources(QueryParam param) {
         return getBillStream(param)
                 .filter(x -> x.getSource() != null)
-                .collect(Collectors.groupingBy(BillDetail::getSource))
+                .collect(Collectors.groupingBy(BaseBillDetail::getSource))
                 .entrySet().stream()
                 .map(entry -> new ExpenseSourceVO(BillSourceEnum.getNameBy(entry.getKey()), entry.getValue().stream()
-                        .map(BillDetail::getAmount)
+                        .map(BaseBillDetail::getAmount)
                         .reduce(BigDecimal.ZERO, BigDecimal::add)))
                 .toList();
     }

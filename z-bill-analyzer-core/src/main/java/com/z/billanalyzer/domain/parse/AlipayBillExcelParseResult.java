@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @Setter
 @Getter
 @ToString
-public class AlipayBillParseResult {
+public class AlipayBillExcelParseResult {
     // 交易时间
     @ExcelProperty(value = "交易时间")
     private LocalDateTime transactionTime;

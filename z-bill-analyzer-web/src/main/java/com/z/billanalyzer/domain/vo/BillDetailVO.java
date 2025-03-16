@@ -1,6 +1,6 @@
 package com.z.billanalyzer.domain.vo;
 
-import com.z.billanalyzer.domain.BillDetail;
+import com.z.billanalyzer.domain.BaseBillDetail;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class BillDetailVO extends BillDetail {
+public class BillDetailVO extends BaseBillDetail {
 
 
     /**

@@ -13,7 +13,7 @@ import lombok.experimental.Accessors;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Accessors(chain = true)
-public class CmbBill extends BaseBill {
+public class CmbBill extends BaseBill<CmbBillDetail> {
     /**
      * 账号
      */

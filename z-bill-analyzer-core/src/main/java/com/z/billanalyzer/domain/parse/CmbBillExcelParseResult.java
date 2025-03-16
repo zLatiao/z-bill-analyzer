@@ -14,7 +14,7 @@ import java.math.BigDecimal;
  */
 @Setter
 @Getter
-public class CmbBillParseResult {
+public class CmbBillExcelParseResult {
     // 交易日期
     @ExcelProperty(value = "交易日期")
     private String date;

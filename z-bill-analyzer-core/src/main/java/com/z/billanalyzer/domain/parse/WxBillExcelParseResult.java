@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Setter
 @Getter
 @ToString
-public class WxBillParseResult {
+public class WxBillExcelParseResult {
     // 交易时间
     @ExcelProperty(value = "交易时间")
     private LocalDateTime transactionTime;

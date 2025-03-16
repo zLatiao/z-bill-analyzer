@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Accessors(chain = true)
-public class AlipayBill extends BaseBill {
+public class AlipayBill extends BaseBill<AlipayBillDetail> {
 
     /**
      * 用户真实姓名
