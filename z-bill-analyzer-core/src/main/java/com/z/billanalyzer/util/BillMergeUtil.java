@@ -44,35 +44,35 @@ public class BillMergeUtil {
         );
     }
 
-    public static void merge(BaseBill<?> sourceBill, BaseBill<?> targetBill) {
-        if (targetBill.getBillDetails() == null || targetBill.getBillDetails().isEmpty()) {
+    public static void merge(BaseBill<?> sourceBaseBill, BaseBill<?> targetBaseBill) {
+        if (targetBaseBill.getBillDetails() == null || targetBaseBill.getBillDetails().isEmpty()) {
             return;
         }
-        switch (sourceBill) {
-            case WxBill wxBillInfo -> {
-                switch (targetBill) {
-                    case WxBill wxBillInfo1 -> merge(wxBillInfo, wxBillInfo1);
-                    case CmbBill cmbBillInfo -> merge(wxBillInfo, cmbBillInfo);
+        switch (sourceBaseBill) {
+            case WxBill sourceBill -> {
+                switch (targetBaseBill) {
+                    case WxBill targetBill -> merge(sourceBill, targetBill);
+                    case CmbBill targetBill -> merge(sourceBill, targetBill);
                     default -> {
                     }
                 }
             }
-            case AlipayBill alipayBillInfo -> {
-                switch (targetBill) {
-                    case AlipayBill alipayBillInfo1 -> merge(alipayBillInfo, alipayBillInfo1);
-                    case CmbBill cmbBillInfo -> merge(alipayBillInfo, cmbBillInfo);
+            case AlipayBill sourceBill -> {
+                switch (targetBaseBill) {
+                    case AlipayBill targetBill -> merge(sourceBill, targetBill);
+                    case CmbBill targetBill -> merge(sourceBill, targetBill);
                     default -> {
                     }
                 }
             }
-            case CmbBill cmbBillInfo -> {
-                switch (targetBill) {
-                    case CmbBill cmbBillInfo1 -> merge(cmbBillInfo, cmbBillInfo1);
+            case CmbBill sourceBill -> {
+                switch (targetBaseBill) {
+                    case CmbBill targetBill -> merge(sourceBill, targetBill);
                     default -> {
                     }
                 }
             }
-            default -> throw new IllegalStateException("Unexpected value: " + sourceBill.getClass());
+            default -> throw new IllegalStateException("Unexpected value: " + sourceBaseBill.getClass());
         }
     }
 
