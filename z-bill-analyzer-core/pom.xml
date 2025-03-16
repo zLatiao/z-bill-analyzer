@@ -6,11 +6,11 @@
 
     <parent>
         <groupId>com.z.billanalyzer</groupId>
-        <artifactId>z-bill-analyzer</artifactId>
+        <artifactId>z-billDetail-analyzer</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>z-bill-analyzer-core</artifactId>
+    <artifactId>z-billDetail-analyzer-core</artifactId>
 
     <properties>
         <java.version>21</java.version>

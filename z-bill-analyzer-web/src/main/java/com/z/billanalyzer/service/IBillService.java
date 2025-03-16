@@ -1,7 +1,7 @@
 package com.z.billanalyzer.service;
 
-import com.z.billanalyzer.domain.BaseBillInfo;
-import com.z.billanalyzer.domain.Bill;
+import com.z.billanalyzer.domain.BaseBill;
+import com.z.billanalyzer.domain.BillDetail;
 import com.z.billanalyzer.domain.QueryParam;
 import com.z.billanalyzer.domain.vo.*;
 import com.z.billanalyzer.domain.vo.echarts.TrendVO;
@@ -16,7 +16,7 @@ public interface IBillService {
      * @param id
      * @return List<Bill>
      */
-    List<Bill> getBills(Integer id);
+    List<BillDetail> getBills(Integer id);
 
     /**
      * 根据ID获取BaseBillInfo列表
@@ -24,7 +24,7 @@ public interface IBillService {
      * @param id
      * @return List<BaseBillInfo>
      */
-    List<BaseBillInfo> getBillInfos(Integer id);
+    List<BaseBill> getBillInfos(Integer id);
 
     /**
      * 获取todo
@@ -40,7 +40,7 @@ public interface IBillService {
      * @param billInfos
      * @return Integer
      */
-    Integer saveBill(List<BaseBillInfo> billInfos);
+    Integer saveBill(List<BaseBill> billInfos);
 
     /**
      * 获取统计数据
@@ -72,7 +72,7 @@ public interface IBillService {
      * @param param
      * @return PageResult<BillVO>
      */
-    PageResult<BillVO> getPage(QueryParam param);
+    PageResult<BillDetailVO> getPage(QueryParam param);
 
     /**
      * 获取支出来源数据

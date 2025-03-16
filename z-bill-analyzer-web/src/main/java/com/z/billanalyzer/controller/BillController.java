@@ -1,7 +1,7 @@
 package com.z.billanalyzer.controller;
 
 import com.z.billanalyzer.ParserCore;
-import com.z.billanalyzer.domain.BaseBillInfo;
+import com.z.billanalyzer.domain.BaseBill;
 import com.z.billanalyzer.domain.parse.BillExcelParseParam;
 import com.z.billanalyzer.domain.QueryParam;
 import com.z.billanalyzer.domain.vo.*;
@@ -37,7 +37,7 @@ public class BillController {
             }
         }).toList();
 
-        List<BaseBillInfo> billInfos = ParserCore.parse(params);
+        List<BaseBill> billInfos = ParserCore.parse(params);
 
         return Result.success(new ParseResultVO(billService.saveBill(billInfos)));
     }
@@ -77,7 +77,7 @@ public class BillController {
     }
 
     @GetMapping("/page")
-    public Result<PageResult<BillVO>> page(@CookieValue(value = "file_session") Integer id, QueryParam param) {
+    public Result<PageResult<BillDetailVO>> page(@CookieValue(value = "file_session") Integer id, QueryParam param) {
         param.setId(id);
         return Result.success(billService.getPage(param));
     }

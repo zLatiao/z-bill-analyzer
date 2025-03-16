@@ -7,17 +7,25 @@ import lombok.experimental.Accessors;
 import java.math.BigDecimal;
 
 /**
+ * 支付宝账单
+ *
  * @author z-latiao
- * @since 2025/2/26 15:05
+ * @since 2025/2/26 15:10
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Accessors(chain = true)
-public class WxBillInfo extends BaseBillInfo {
+public class AlipayBill extends BaseBill {
+
     /**
-     * 微信昵称
+     * 用户真实姓名
      */
-    private String wechatNickname;
+    private String name;
+
+    /**
+     * 支付宝账号
+     */
+    private String alipayAccount;
 
     /**
      * 导出类型
@@ -30,32 +38,32 @@ public class WxBillInfo extends BaseBillInfo {
     private Integer transactionCount;
 
     /**
-     * 收入数量
+     * 收入交易数量
      */
     private Integer incomeCount;
 
     /**
-     * 收入金额
+     * 收入总金额
      */
     private BigDecimal incomeAmount;
 
     /**
-     * 支出数量
+     * 支出交易数量
      */
     private Integer expenseCount;
 
     /**
-     * 支出金额
+     * 支出总金额
      */
     private BigDecimal expenseAmount;
 
     /**
-     * 中性交易数量
+     * 不计收支的交易数量
      */
     private Integer neutralCount;
 
     /**
-     * 中性交易金额
+     * 不计收支的总金额
      */
     private BigDecimal neutralAmount;
 }

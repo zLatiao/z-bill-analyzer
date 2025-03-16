@@ -39,35 +39,35 @@ public class BillMergeUtil {
 
     public static List<String> cmbPaymentModeList = List.of("网联退款", "网联协议支付", "银联快捷支付", "投资理财", "网联付款交易");
 
-    public static void merge(List<BaseBillInfo> billInfos) {
+    public static void merge(List<BaseBill> billInfos) {
         billInfos.forEach(sourceBillInfo -> billInfos.forEach(targetBillInfo -> merge(sourceBillInfo, targetBillInfo))
         );
     }
 
-    public static void merge(BaseBillInfo sourceBillInfo, BaseBillInfo targetBillInfo) {
-        if (targetBillInfo.getBills() == null || targetBillInfo.getBills().isEmpty()) {
+    public static void merge(BaseBill sourceBillInfo, BaseBill targetBillInfo) {
+        if (targetBillInfo.getBillDetails() == null || targetBillInfo.getBillDetails().isEmpty()) {
             return;
         }
         switch (sourceBillInfo) {
-            case WxBillInfo wxBillInfo -> {
+            case WxBill wxBillInfo -> {
                 switch (targetBillInfo) {
-                    case WxBillInfo wxBillInfo1 -> merge(wxBillInfo, wxBillInfo1);
-                    case CmbBillInfo cmbBillInfo -> merge(wxBillInfo, cmbBillInfo);
+                    case WxBill wxBillInfo1 -> merge(wxBillInfo, wxBillInfo1);
+                    case CmbBill cmbBillInfo -> merge(wxBillInfo, cmbBillInfo);
                     default -> {
                     }
                 }
             }
-            case AlipayBillInfo alipayBillInfo -> {
+            case AlipayBill alipayBillInfo -> {
                 switch (targetBillInfo) {
-                    case AlipayBillInfo alipayBillInfo1 -> merge(alipayBillInfo, alipayBillInfo1);
-                    case CmbBillInfo cmbBillInfo -> merge(alipayBillInfo, cmbBillInfo);
+                    case AlipayBill alipayBillInfo1 -> merge(alipayBillInfo, alipayBillInfo1);
+                    case CmbBill cmbBillInfo -> merge(alipayBillInfo, cmbBillInfo);
                     default -> {
                     }
                 }
             }
-            case CmbBillInfo cmbBillInfo -> {
+            case CmbBill cmbBillInfo -> {
                 switch (targetBillInfo) {
-                    case CmbBillInfo cmbBillInfo1 -> merge(cmbBillInfo, cmbBillInfo1);
+                    case CmbBill cmbBillInfo1 -> merge(cmbBillInfo, cmbBillInfo1);
                     default -> {
                     }
                 }
@@ -76,13 +76,13 @@ public class BillMergeUtil {
         }
     }
 
-    public static void merge(CmbBillInfo sourceBillInfo, CmbBillInfo targetBillInfo) {
+    public static void merge(CmbBill sourceBillInfo, CmbBill targetBillInfo) {
         if (sourceBillInfo == targetBillInfo) {
             // TODO: 2025/3/11  朝朝宝赎回和支出可能会重复，要考虑怎么合并
         } else {
-            sourceBillInfo.getBills().stream()
+            sourceBillInfo.getBillDetails().stream()
                     .filter(sourceBill -> !sourceBill.isMerge())
-                    .forEach(sourceBill -> targetBillInfo.getBills().stream()
+                    .forEach(sourceBill -> targetBillInfo.getBillDetails().stream()
                             .filter(targetBill -> Objects.equals(sourceBill.getTransactionTime(), targetBill.getTransactionTime()))
                             .filter(targetBill -> Objects.equals(sourceBill.getAmountType(), targetBill.getAmountType()))
                             .filter(targetBill -> Objects.equals(sourceBill.getAmount(), targetBill.getAmount()))
@@ -93,113 +93,113 @@ public class BillMergeUtil {
 
     }
 
-    public static void merge(AlipayBillInfo sourceBillInfo, CmbBillInfo targetBillInfo) {
+    public static void merge(AlipayBill sourceBillInfo, CmbBill targetBillInfo) {
         /**
          * 1. 按过滤出CMB的按银行卡号分组
          * 2. 按照时间分组
          */
         // 按银行卡号分组
-        LinkedHashMap<String, List<Bill>> bankMap = sourceBillInfo.getBills().stream()
+        LinkedHashMap<String, List<BillDetail>> bankMap = sourceBillInfo.getBillDetails().stream()
                 .filter(sourceBill -> BankEnum.CMB.equals(sourceBill.getBank()))
-                .collect(Collectors.groupingBy(Bill::getBankAccountLast4Number, LinkedHashMap::new, Collectors.toList()));
-        for (Map.Entry<String, List<Bill>> entry : bankMap.entrySet()) {
+                .collect(Collectors.groupingBy(BillDetail::getBankAccountLast4Number, LinkedHashMap::new, Collectors.toList()));
+        for (Map.Entry<String, List<BillDetail>> entry : bankMap.entrySet()) {
             // 按照时间分组
-            LinkedHashMap<LocalDateTime, List<Bill>> collect = entry.getValue().stream()
-                    .collect(Collectors.groupingBy(Bill::getTransactionTime, LinkedHashMap::new, Collectors.toList()));
-            for (Map.Entry<LocalDateTime, List<Bill>> subEntry : collect.entrySet()) {
-                List<Bill> sourceBills = subEntry.getValue();
-                String cardNumber = sourceBills.getFirst().getBankAccountLast4Number();
-                LocalDateTime transactionTime = sourceBills.getFirst().getTransactionTime();
+            LinkedHashMap<LocalDateTime, List<BillDetail>> collect = entry.getValue().stream()
+                    .collect(Collectors.groupingBy(BillDetail::getTransactionTime, LinkedHashMap::new, Collectors.toList()));
+            for (Map.Entry<LocalDateTime, List<BillDetail>> subEntry : collect.entrySet()) {
+                List<BillDetail> sourceBillDetails = subEntry.getValue();
+                String cardNumber = sourceBillDetails.getFirst().getBankAccountLast4Number();
+                LocalDateTime transactionTime = sourceBillDetails.getFirst().getTransactionTime();
 
                 if (!cardNumber.equals(targetBillInfo.getBankAccountLast4Number())) {
 //                    log.error("找不到匹配的招商银行账单信息，卡号后四位：{}", cardNumber);
                     return;
                 }
 
-                BigDecimal amountSum = sourceBills.stream().map(Bill::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+                BigDecimal amountSum = sourceBillDetails.stream().map(BillDetail::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
 
-                Predicate<Bill> billPredicate = cmb -> cardNumber.equals(cmb.getBankAccountLast4Number())
+                Predicate<BillDetail> billPredicate = cmb -> cardNumber.equals(cmb.getBankAccountLast4Number())
                         && cmbPaymentModeList.contains(cmb.getTransactionType())
                         && (cmb.getAmount().compareTo(amountSum) == 0)
                         && cmb.getRemark().split("-")[0].equals("支付宝");
 
-                List<Bill> targetBills = targetBillInfo.getBills();
+                List<BillDetail> targetBillDetails = targetBillInfo.getBillDetails();
 
                 // 先用时间相等比较
-                List<Bill> filterBills = targetBills.stream()
+                List<BillDetail> filterBillDetails = targetBillDetails.stream()
                         .filter(billPredicate)
                         .filter(cmb -> cmb.getTransactionTime().isEqual(transactionTime))
                         .toList();
 
-                if (filterBills.size() == 1) {
-                    Bill targetBill = filterBills.getFirst();
-                    setMerge(targetBill, 1);
+                if (filterBillDetails.size() == 1) {
+                    BillDetail targetBillDetail = filterBillDetails.getFirst();
+                    setMerge(targetBillDetail, 1);
                     return;
-                } else if (filterBills.size() > 1) {
-                    log.error("匹配到多个费用：{}， \n{}", sourceBills, filterBills);
+                } else if (filterBillDetails.size() > 1) {
+                    log.error("匹配到多个费用：{}， \n{}", sourceBillDetails, filterBillDetails);
                     return;
                 }
 
                 // 上面不行再用时间差5秒内比较
-                List<Bill> filterBills2 = targetBills.stream()
+                List<BillDetail> filterBills2 = targetBillDetails.stream()
                         .filter(billPredicate)
                         .filter(x -> Math.abs(Duration.between(x.getTransactionTime(), transactionTime).toSeconds()) <= 5)
                         .collect(Collectors.toList());
                 if (filterBills2.size() == 1) {
-                    Bill targetBill = filterBills2.getFirst();
-                    setMerge(targetBill, 1);
-                    sourceBills.forEach(bill -> {
+                    BillDetail targetBillDetail = filterBills2.getFirst();
+                    setMerge(targetBillDetail, 1);
+                    sourceBillDetails.forEach(bill -> {
                     });
                     return;
                 } else if (filterBills2.size() > 1) {
-                    log.error("匹配到多个费用：{}， \n{}", sourceBills, filterBills2);
+                    log.error("匹配到多个费用：{}， \n{}", sourceBillDetails, filterBills2);
                 }
 
                 // 上面不行再用时间差60秒内比较
-                List<Bill> filterBills3 = targetBills.stream()
+                List<BillDetail> filterBills3 = targetBillDetails.stream()
                         .filter(billPredicate)
                         .filter(x -> Math.abs(Duration.between(x.getTransactionTime(), transactionTime).toSeconds()) <= 60)
                         .toList();
                 if (filterBills3.size() == 1) {
-                    Bill targetBill = filterBills3.getFirst();
-                    setMerge(targetBill, 1);
+                    BillDetail targetBillDetail = filterBills3.getFirst();
+                    setMerge(targetBillDetail, 1);
                     return;
                 } else if (filterBills2.size() > 1) {
-                    log.error("匹配到多个费用：{}， \n{}", sourceBills, filterBills2);
+                    log.error("匹配到多个费用：{}， \n{}", sourceBillDetails, filterBills2);
                 }
 
                 // 上面不行再用时间差5分钟内比较
-                List<Bill> filterBills4 = targetBills.stream()
+                List<BillDetail> filterBills4 = targetBillDetails.stream()
                         .filter(billPredicate)
                         .filter(x -> Math.abs(Duration.between(x.getTransactionTime(), transactionTime).toSeconds()) <= 60 * 5)
                         .toList();
                 if (filterBills4.isEmpty()) {
 //                    log.error("找不到匹配的招商银行账单记录：{}", sourceBills);
                 } else if (filterBills4.size() == 1) {
-                    Bill targetBill = filterBills4.getFirst();
-                    setMerge(targetBill, 1);
+                    BillDetail targetBillDetail = filterBills4.getFirst();
+                    setMerge(targetBillDetail, 1);
                 } else {
-                    log.error("匹配到多个费用：{}， \n{}", sourceBills, filterBills2);
+                    log.error("匹配到多个费用：{}， \n{}", sourceBillDetails, filterBills2);
                 }
             }
 
         }
     }
 
-    public static void merge(AlipayBillInfo sourceBillInfo, AlipayBillInfo targetBillInfo) {
+    public static void merge(AlipayBill sourceBillInfo, AlipayBill targetBillInfo) {
         if (sourceBillInfo == targetBillInfo) {
             // TODO: 2025/3/11 退款
             return;
         }
-        sourceBillInfo.getBills().stream()
+        sourceBillInfo.getBillDetails().stream()
                 .filter(sourceBill -> !sourceBill.isMerge())
-                .forEach(sourceBill -> targetBillInfo.getBills().stream()
+                .forEach(sourceBill -> targetBillInfo.getBillDetails().stream()
                         .filter(targetBill -> sourceBill.getBillNo().equals(targetBill.getBillNo()))
                         .forEach(targetBill -> setMerge(targetBill, 0)));
     }
 
-    public static void merge(WxBillInfo sourceBillInfo, CmbBillInfo targetBillInfo) {
-        sourceBillInfo.getBills().stream()
+    public static void merge(WxBill sourceBillInfo, CmbBill targetBillInfo) {
+        sourceBillInfo.getBillDetails().stream()
                 .filter(sourceBill -> BankEnum.CMB.equals(sourceBill.getBank()))
                 .forEach(sourceBill -> {
                     String cardNumber = sourceBill.getBankAccountLast4Number();
@@ -207,40 +207,40 @@ public class BillMergeUtil {
                         return;
                     }
 
-                    List<Bill> cmbBills = targetBillInfo.getBills();
+                    List<BillDetail> cmbBillDetails = targetBillInfo.getBillDetails();
 
-                    Predicate<Bill> billPredicate = cmb -> cardNumber.equals(cmb.getBankAccountLast4Number())
+                    Predicate<BillDetail> billPredicate = cmb -> cardNumber.equals(cmb.getBankAccountLast4Number())
                             && cmbPaymentModeList.contains(cmb.getTransactionType())
                             && cmb.getAmount().compareTo(sourceBill.getAmount()) == 0
                             && cmb.getRemark().split("-")[0].equals("财付通");
 
                     // 先用时间相等比较
-                    List<Bill> filterBills = cmbBills.stream()
+                    List<BillDetail> filterBillDetails = cmbBillDetails.stream()
                             .filter(billPredicate)
                             .filter(cmb -> cmb.getTransactionTime().isEqual(sourceBill.getTransactionTime()))
                             .toList();
 
-                    if (filterBills.size() == 1) {
-                        Bill targetBill = filterBills.getFirst();
-                        setMerge(targetBill, 1);
+                    if (filterBillDetails.size() == 1) {
+                        BillDetail targetBillDetail = filterBillDetails.getFirst();
+                        setMerge(targetBillDetail, 1);
                         return;
                     }
 
-                    if (filterBills.size() > 1) {
-                        log.error("匹配到多个费用：{}， \n{}", sourceBill, filterBills);
+                    if (filterBillDetails.size() > 1) {
+                        log.error("匹配到多个费用：{}， \n{}", sourceBill, filterBillDetails);
                         return;
                     }
 
                     // 上面不行再用时间差1秒内比较
-                    List<Bill> filterBills2 = cmbBills.stream()
+                    List<BillDetail> filterBills2 = cmbBillDetails.stream()
                             .filter(billPredicate)
                             .filter(x -> Math.abs(Duration.between(x.getTransactionTime(), sourceBill.getTransactionTime()).toSeconds()) <= 1)
                             .collect(Collectors.toList());
                     if (filterBills2.isEmpty()) {
 //                        log.error("找不到匹配的招商银行账单记录：{}", sourceBill);
                     } else if (filterBills2.size() == 1) {
-                        Bill targetBill = filterBills2.getFirst();
-                        setMerge(targetBill, 1);
+                        BillDetail targetBillDetail = filterBills2.getFirst();
+                        setMerge(targetBillDetail, 1);
                     } else {
                         log.error("匹配到多个费用：{}， \n{}", sourceBill, filterBills2);
                     }
@@ -248,20 +248,20 @@ public class BillMergeUtil {
 
     }
 
-    public static void merge(WxBillInfo sourceBillInfo, WxBillInfo targetBillInfo) {
+    public static void merge(WxBill sourceBillInfo, WxBill targetBillInfo) {
         if (sourceBillInfo == targetBillInfo) {
             // TODO: 2025/3/11 退款
             return;
         }
-        sourceBillInfo.getBills().stream()
+        sourceBillInfo.getBillDetails().stream()
                 .filter(sourceBill -> !sourceBill.isMerge())
-                .forEach(sourceBill -> targetBillInfo.getBills().stream()
+                .forEach(sourceBill -> targetBillInfo.getBillDetails().stream()
                         .filter(targetBill -> sourceBill.getBillNo().equals(targetBill.getBillNo()))
                         .forEach(targetBill -> setMerge(targetBill, 0)));
     }
 
-    public static void setMerge(Bill bill, Integer mergeType) {
-        bill.setMerge(true);
-        bill.setMergeType(mergeType);
+    public static void setMerge(BillDetail billDetail, Integer mergeType) {
+        billDetail.setMerge(true);
+        billDetail.setMergeType(mergeType);
     }
 }

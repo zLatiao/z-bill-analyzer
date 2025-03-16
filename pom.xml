@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.z.billanalyzer</groupId>
-    <artifactId>z-bill-analyzer</artifactId>
+    <artifactId>z-billDetail-analyzer</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
@@ -16,8 +16,8 @@
     </parent>
 
     <modules>
-        <module>z-bill-analyzer-core</module>
-        <module>z-bill-analyzer-web</module>
+        <module>z-billDetail-analyzer-core</module>
+        <module>z-billDetail-analyzer-web</module>
     </modules>
 
     <properties>

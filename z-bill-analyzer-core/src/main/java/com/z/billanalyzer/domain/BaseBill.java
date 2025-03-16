@@ -12,7 +12,7 @@ import java.util.List;
  */
 @Data
 @Accessors(chain = true)
-public class BaseBillInfo {
+public class BaseBill {
     /**
      * 文件名
      */
@@ -36,7 +36,7 @@ public class BaseBillInfo {
     /**
      * 账单
      */
-    private List<Bill> bills;
+    private List<BillDetail> billDetails;
 
     /**
      * 是否银行账单

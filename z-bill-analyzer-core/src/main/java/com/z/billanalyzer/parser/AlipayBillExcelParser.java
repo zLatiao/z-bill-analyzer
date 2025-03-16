@@ -3,9 +3,9 @@ package com.z.billanalyzer.parser;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import com.z.billanalyzer.constant.GlobalConstant;
-import com.z.billanalyzer.domain.AlipayBillInfo;
+import com.z.billanalyzer.domain.AlipayBill;
 import com.z.billanalyzer.domain.parse.AlipayBillParseResult;
-import com.z.billanalyzer.domain.Bill;
+import com.z.billanalyzer.domain.BillDetail;
 import com.z.billanalyzer.enums.BankEnum;
 import com.z.billanalyzer.listener.BillExcelListener;
 import com.z.billanalyzer.util.ReUtil;
@@ -27,7 +27,7 @@ import static com.z.billanalyzer.constant.GlobalConstant.DATE_TIME_FORMATTER;
  * @author z-latiao
  * @since 2025/2/26 15:58
  */
-public class AlipayBillExcelParser implements IBillExcelParser<AlipayBillInfo, AlipayBillParseResult> {
+public class AlipayBillExcelParser implements IBillExcelParser<AlipayBill, AlipayBillParseResult> {
     private static final List<Integer> excelReadNumbers = List.of(2, 3, 4, 5, 6, 7, 8, 9, 10);
 
     private static final int excelStopNumber = 10;
@@ -41,7 +41,7 @@ public class AlipayBillExcelParser implements IBillExcelParser<AlipayBillInfo, A
     private static final Pattern incomePattern = Pattern.compile("收入：(\\d+)笔 (\\d+\\.\\d+)元");
     private static final Pattern outcomePattern = Pattern.compile("支出：(\\d+)笔 (\\d+\\.\\d+)元");
     private static final Pattern neutralTradingPattern = Pattern.compile("不计收支：(\\d+)笔 (\\d+\\.\\d+)元");
-    private static final Map<Pattern, BiConsumer<Matcher, AlipayBillInfo>> patternBiConsumerMap = Map.ofEntries(
+    private static final Map<Pattern, BiConsumer<Matcher, AlipayBill>> patternBiConsumerMap = Map.ofEntries(
             Map.entry(namePattern, (matcher, alipayBillInfo) -> alipayBillInfo.setName(matcher.group(1))),
             Map.entry(accountPattern, (matcher, alipayBillInfo) -> alipayBillInfo.setAlipayAccount(matcher.group(1))),
             Map.entry(timePattern, (matcher, wxBillInfo) -> wxBillInfo.setStartTime(LocalDateTime.parse(matcher.group(1), DATE_TIME_FORMATTER)).setEndTime(LocalDateTime.parse(matcher.group(2), DATE_TIME_FORMATTER))),
@@ -67,15 +67,15 @@ public class AlipayBillExcelParser implements IBillExcelParser<AlipayBillInfo, A
     }
 
     @Override
-    public AlipayBillInfo parseInfo(InputStream is) {
-        AlipayBillInfo result = new AlipayBillInfo();
+    public AlipayBill parseInfo(InputStream is) {
+        AlipayBill result = new AlipayBill();
         result.setIsBankBill(false);
 
         List<String> dataList = parseInfoByEasyExcel(is);
         for (String data : dataList) {
-            for (Map.Entry<Pattern, BiConsumer<Matcher, AlipayBillInfo>> entry : patternBiConsumerMap.entrySet()) {
+            for (Map.Entry<Pattern, BiConsumer<Matcher, AlipayBill>> entry : patternBiConsumerMap.entrySet()) {
                 Pattern key = entry.getKey();
-                BiConsumer<Matcher, AlipayBillInfo> value = entry.getValue();
+                BiConsumer<Matcher, AlipayBill> value = entry.getValue();
                 if (ReUtil.findAll(key, data, matcher -> value.accept(matcher, result))) {
                     break;
                 }
@@ -97,19 +97,19 @@ public class AlipayBillExcelParser implements IBillExcelParser<AlipayBillInfo, A
     }
 
     @Override
-    public List<Bill> convert(List<AlipayBillParseResult> billRecords) {
-        List<Bill> bills = IBillExcelParser.super.convert(billRecords);
+    public List<BillDetail> convert(List<AlipayBillParseResult> billRecords) {
+        List<BillDetail> billDetails = IBillExcelParser.super.convert(billRecords);
         // TODO 2025/2/27 这里逻辑要不要改成到afterParse里去做
-        for (Bill bill : bills) {
-            if (bill.getPaymentMode() == null) {
+        for (BillDetail billDetail : billDetails) {
+            if (billDetail.getPaymentMode() == null) {
                 continue;
             }
-            Matcher matcher = GlobalConstant.CMB_PATTERN.matcher(bill.getPaymentMode());
+            Matcher matcher = GlobalConstant.CMB_PATTERN.matcher(billDetail.getPaymentMode());
             if (matcher.find()) {
-                bill.setBank(BankEnum.CMB);
-                bill.setBankAccountLast4Number(matcher.group(1));
+                billDetail.setBank(BankEnum.CMB);
+                billDetail.setBankAccountLast4Number(matcher.group(1));
             }
         }
-        return bills;
+        return billDetails;
     }
 }

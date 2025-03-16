@@ -5,13 +5,15 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 /**
+ * 招商银行账单
+ *
  * @author z-latiao
  * @since 2025/2/26 15:10
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Accessors(chain = true)
-public class CmbBillInfo extends BaseBillInfo {
+public class CmbBill extends BaseBill {
     /**
      * 账号
      */

@@ -1,7 +1,7 @@
 package com.z.billanalyzer;
 
 import cn.hutool.json.JSONUtil;
-import com.z.billanalyzer.domain.Bill;
+import com.z.billanalyzer.domain.BillDetail;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -20,7 +20,7 @@ public class Main {
 //        List<Bill> list = billParseDTOS.stream().map(BillParser::parse).map(BillConvertor::covert).flatMap(Collection::stream).toList();
 
         String s = Files.readString(Path.of("C:\\Users\\anjun\\Desktop\\账单\\新建文本文档.txt"));
-        List<Bill> list = JSONUtil.toList(s, Bill.class);
+        List<BillDetail> list = JSONUtil.toList(s, BillDetail.class);
 
     }
 }

@@ -3,8 +3,8 @@ package com.z.billanalyzer.parser;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import com.z.billanalyzer.constant.GlobalConstant;
-import com.z.billanalyzer.domain.Bill;
-import com.z.billanalyzer.domain.WxBillInfo;
+import com.z.billanalyzer.domain.BillDetail;
+import com.z.billanalyzer.domain.WxBill;
 import com.z.billanalyzer.domain.parse.WxBillParseResult;
 import com.z.billanalyzer.enums.BankEnum;
 import com.z.billanalyzer.listener.BillExcelListener;
@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
  * @author z-latiao
  * @since 2025/2/26 15:28
  */
-public class WxBillExcelParser implements IBillExcelParser<WxBillInfo, WxBillParseResult> {
+public class WxBillExcelParser implements IBillExcelParser<WxBill, WxBillParseResult> {
 
     private static final List<Integer> excelReadNumbers = List.of(1, 2, 3, 4, 6, 7, 8, 9);
 
@@ -38,7 +38,7 @@ public class WxBillExcelParser implements IBillExcelParser<WxBillInfo, WxBillPar
     private static final Pattern incomePattern = Pattern.compile("收入：(\\d+)笔 (\\d+\\.\\d+)元");
     private static final Pattern outcomePattern = Pattern.compile("支出：(\\d+)笔 (\\d+\\.\\d+)元");
     private static final Pattern neutralTradingPattern = Pattern.compile("中性交易：(\\d+)笔 (\\d+\\.\\d+)元");
-    private static final Map<Pattern, BiConsumer<Matcher, WxBillInfo>> patternBiConsumerMap = Map.ofEntries(
+    private static final Map<Pattern, BiConsumer<Matcher, WxBill>> patternBiConsumerMap = Map.ofEntries(
             Map.entry(namePattern, (matcher, wxBillInfo) -> wxBillInfo.setWechatNickname(matcher.group(1))),
             Map.entry(timePattern, (matcher, wxBillInfo) -> wxBillInfo.setStartTime(LocalDateTime.parse(matcher.group(1), GlobalConstant.DATE_TIME_FORMATTER)).setEndTime(LocalDateTime.parse(matcher.group(2), GlobalConstant.DATE_TIME_FORMATTER))),
             Map.entry(exportTypePattern, (matcher, wxBillInfo) -> wxBillInfo.setExportType(matcher.group(1))),
@@ -63,16 +63,16 @@ public class WxBillExcelParser implements IBillExcelParser<WxBillInfo, WxBillPar
     }
 
     @Override
-    public WxBillInfo parseInfo(InputStream is) {
-        WxBillInfo result = new WxBillInfo();
+    public WxBill parseInfo(InputStream is) {
+        WxBill result = new WxBill();
         result.setIsBankBill(false);
 
         List<String> dataList = parseInfoByEasyExcel(is);
         for (String data : dataList) {
             // todo 可以用个类封装起来
-            for (Map.Entry<Pattern, BiConsumer<Matcher, WxBillInfo>> entry : patternBiConsumerMap.entrySet()) {
+            for (Map.Entry<Pattern, BiConsumer<Matcher, WxBill>> entry : patternBiConsumerMap.entrySet()) {
                 Pattern key = entry.getKey();
-                BiConsumer<Matcher, WxBillInfo> value = entry.getValue();
+                BiConsumer<Matcher, WxBill> value = entry.getValue();
                 if (ReUtil.findAll(key, data, matcher -> value.accept(matcher, result))) {
                     break;
                 }
@@ -95,19 +95,19 @@ public class WxBillExcelParser implements IBillExcelParser<WxBillInfo, WxBillPar
     }
 
     @Override
-    public List<Bill> convert(List<WxBillParseResult> billRecords) {
-        List<Bill> bills = IBillExcelParser.super.convert(billRecords);
+    public List<BillDetail> convert(List<WxBillParseResult> billRecords) {
+        List<BillDetail> billDetails = IBillExcelParser.super.convert(billRecords);
         // TODO 2025/2/27 这里逻辑要不要改成到afterParse里去做
-        for (Bill bill : bills) {
-            if (bill.getPaymentMode() == null) {
+        for (BillDetail billDetail : billDetails) {
+            if (billDetail.getPaymentMode() == null) {
                 continue;
             }
-            Matcher matcher = GlobalConstant.CMB_PATTERN.matcher(bill.getPaymentMode());
+            Matcher matcher = GlobalConstant.CMB_PATTERN.matcher(billDetail.getPaymentMode());
             if (matcher.find()) {
-                bill.setBank(BankEnum.CMB);
-                bill.setBankAccountLast4Number(matcher.group(1));
+                billDetail.setBank(BankEnum.CMB);
+                billDetail.setBankAccountLast4Number(matcher.group(1));
             }
         }
-        return bills;
+        return billDetails;
     }
 }

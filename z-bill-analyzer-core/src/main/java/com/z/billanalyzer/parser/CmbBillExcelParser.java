@@ -2,7 +2,7 @@ package com.z.billanalyzer.parser;
 
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.support.ExcelTypeEnum;
-import com.z.billanalyzer.domain.CmbBillInfo;
+import com.z.billanalyzer.domain.CmbBill;
 import com.z.billanalyzer.domain.parse.CmbBillParseResult;
 import com.z.billanalyzer.listener.BillExcelListener;
 import com.z.billanalyzer.util.ReUtil;
@@ -25,7 +25,7 @@ import static com.z.billanalyzer.constant.GlobalConstant.DATE_TIME_FORMATTER;
  * @author z-latiao
  * @since 2025/2/26 17:43
  */
-public class CmbBillExcelParser implements IBillExcelParser<CmbBillInfo, CmbBillParseResult> {
+public class CmbBillExcelParser implements IBillExcelParser<CmbBill, CmbBillParseResult> {
 
     private static final List<Integer> excelReadNumbers = List.of(1, 2, 3, 4, 5);
 
@@ -39,7 +39,7 @@ public class CmbBillExcelParser implements IBillExcelParser<CmbBillInfo, CmbBill
     private static final Pattern accountLast4NumberPattern = Pattern.compile(".*\\*+(\\d{4})");
 
 
-    private static final Map<Pattern, BiConsumer<Matcher, CmbBillInfo>> patternBiConsumerMap = Map.ofEntries(
+    private static final Map<Pattern, BiConsumer<Matcher, CmbBill>> patternBiConsumerMap = Map.ofEntries(
             Map.entry(accountPattern, (matcher, cmbBillInfo) -> cmbBillInfo.setBankAccountNumber(matcher.group(1))),
             Map.entry(timePattern, (matcher, wxBillInfo) -> wxBillInfo.setStartTime(LocalDateTime.of(LocalDate.parse(matcher.group(1), DATE_FORMATTER), LocalTime.MIN)).setEndTime(LocalDateTime.of(LocalDate.parse(matcher.group(2), DATE_FORMATTER), LocalTime.MAX))),
             Map.entry(currencyPattern, (matcher, cmbBillInfo) -> cmbBillInfo.setCurrency(matcher.group(1))),
@@ -62,15 +62,15 @@ public class CmbBillExcelParser implements IBillExcelParser<CmbBillInfo, CmbBill
     }
 
     @Override
-    public CmbBillInfo parseInfo(InputStream is) {
-        CmbBillInfo result = new CmbBillInfo();
+    public CmbBill parseInfo(InputStream is) {
+        CmbBill result = new CmbBill();
         result.setIsBankBill(true);
 
         List<String> dataList = parseInfoByEasyExcel(is);
         for (String data : dataList) {
-            for (Map.Entry<Pattern, BiConsumer<Matcher, CmbBillInfo>> entry : patternBiConsumerMap.entrySet()) {
+            for (Map.Entry<Pattern, BiConsumer<Matcher, CmbBill>> entry : patternBiConsumerMap.entrySet()) {
                 Pattern key = entry.getKey();
-                BiConsumer<Matcher, CmbBillInfo> value = entry.getValue();
+                BiConsumer<Matcher, CmbBill> value = entry.getValue();
                 if (ReUtil.findAll(key, data, matcher -> value.accept(matcher, result))) {
                     break;
                 }
@@ -90,14 +90,14 @@ public class CmbBillExcelParser implements IBillExcelParser<CmbBillInfo, CmbBill
     }
 
     @Override
-    public void afterParse(CmbBillInfo billInfo) {
+    public void afterParse(CmbBill billInfo) {
         String bankAccountNumber = billInfo.getBankAccountNumber();
         Matcher matcher = accountLast4NumberPattern.matcher(bankAccountNumber);
         if (matcher.find()) {
             String group = matcher.group(1);
             billInfo.setBankAccountLast4Number(group);
-            if (billInfo.getBills() != null) {
-                billInfo.getBills().forEach(x -> x.setBankAccountLast4Number(group));
+            if (billInfo.getBillDetails() != null) {
+                billInfo.getBillDetails().forEach(x -> x.setBankAccountLast4Number(group));
             }
         }
     }

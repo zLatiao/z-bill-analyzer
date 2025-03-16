@@ -12,7 +12,7 @@ import java.util.List;
 
 /**
  * <p>
- * 账单
+ * 账单明细
  * </p>
  *
  * @author zzz
@@ -22,7 +22,7 @@ import java.util.List;
 @Setter
 @Accessors(chain = true)
 @ToString
-public class Bill {
+public class BillDetail {
 
     /**
      * id
@@ -109,7 +109,7 @@ public class Bill {
     /**
      * 相同的账单
      */
-    private List<Bill> sameBills;
+    private List<BillDetail> sameBillDetails;
 
     /**
      * 是否合并了

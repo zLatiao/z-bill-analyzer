@@ -1,7 +1,7 @@
 package com.z.billanalyzer.service.impl;
 
-import com.z.billanalyzer.domain.BaseBillInfo;
-import com.z.billanalyzer.domain.Bill;
+import com.z.billanalyzer.domain.BaseBill;
+import com.z.billanalyzer.domain.BillDetail;
 import com.z.billanalyzer.domain.QueryParam;
 import com.z.billanalyzer.domain.vo.echarts.TrendVO;
 import com.z.billanalyzer.service.IBillService;
@@ -25,12 +25,12 @@ import java.util.List;
 @ConditionalOnProperty(name = "bill-service", havingValue = "mock")
 public class MockBillServiceImpl implements IBillService {
     @Override
-    public List<Bill> getBills(Integer id) {
+    public List<BillDetail> getBills(Integer id) {
         return Collections.emptyList();
     }
 
     @Override
-    public List<BaseBillInfo> getBillInfos(Integer id) {
+    public List<BaseBill> getBillInfos(Integer id) {
         return Collections.emptyList();
     }
 
@@ -40,7 +40,7 @@ public class MockBillServiceImpl implements IBillService {
     }
 
     @Override
-    public Integer saveBill(List<BaseBillInfo> billInfos) {
+    public Integer saveBill(List<BaseBill> billInfos) {
         return 0;
     }
 
@@ -80,12 +80,12 @@ public class MockBillServiceImpl implements IBillService {
     }
 
     @Override
-    public PageResult<BillVO> getPage(QueryParam param) {
+    public PageResult<BillDetailVO> getPage(QueryParam param) {
         // 生成50条测试数据
-        List<BillVO> allData = new ArrayList<>();
+        List<BillDetailVO> allData = new ArrayList<>();
         LocalDateTime baseDate = LocalDateTime.of(LocalDate.of(2025, 1, 1), LocalTime.MIN);
         for (int i = 0; i < 50; i++) {
-            BillVO t = new BillVO();
+            BillDetailVO t = new BillDetailVO();
             t.setAmount(new BigDecimal(80 + i * 10));
             t.setAmountTypeStr(i % 2 == 0 ? "收入" : "支出");
             t.setSourceStr(i % 3 == 0 ? "支付宝" : (i % 3 == 1 ? "微信" : "银行卡"));
