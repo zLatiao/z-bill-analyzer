@@ -1,12 +1,9 @@
 package com.z.billanalyzer;
 
-import com.z.billanalyzer.domain.*;
-import com.z.billanalyzer.domain.parse.AlipayBillExcelParseResult;
-import com.z.billanalyzer.domain.parse.CmbBillExcelParseResult;
-import com.z.billanalyzer.domain.parse.WxBillExcelParseResult;
+import com.z.billanalyzer.domain.bill.BaseBill;
+import com.z.billanalyzer.domain.bill.CmbBill;
 import com.z.billanalyzer.parser.AlipayBillExcelParser;
 import com.z.billanalyzer.parser.CmbBillExcelParser;
-import com.z.billanalyzer.parser.IBillExcelParser;
 import com.z.billanalyzer.parser.WxBillExcelParser;
 import com.z.billanalyzer.util.BillMergeUtil;
 import lombok.extern.slf4j.Slf4j;

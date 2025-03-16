@@ -1,4 +1,4 @@
-package com.z.billanalyzer.domain;
+package com.z.billanalyzer.domain.bill;
 
 import com.z.billanalyzer.enums.BankEnum;
 import lombok.Getter;

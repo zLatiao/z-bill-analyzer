@@ -1,8 +1,7 @@
 package com.z.billanalyzer.controller;
 
 import com.z.billanalyzer.ParserCore;
-import com.z.billanalyzer.domain.BaseBill;
-import com.z.billanalyzer.domain.BaseBillDetail;
+import com.z.billanalyzer.domain.bill.BaseBill;
 import com.z.billanalyzer.domain.parse.BillExcelParseParam;
 import com.z.billanalyzer.domain.QueryParam;
 import com.z.billanalyzer.domain.vo.*;

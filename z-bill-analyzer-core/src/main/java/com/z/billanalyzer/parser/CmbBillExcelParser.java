@@ -2,8 +2,8 @@ package com.z.billanalyzer.parser;
 
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.support.ExcelTypeEnum;
-import com.z.billanalyzer.domain.CmbBill;
-import com.z.billanalyzer.domain.CmbBillDetail;
+import com.z.billanalyzer.domain.bill.CmbBill;
+import com.z.billanalyzer.domain.bill.CmbBillDetail;
 import com.z.billanalyzer.domain.parse.CmbBillExcelParseResult;
 import com.z.billanalyzer.listener.BillExcelListener;
 import com.z.billanalyzer.util.BillConvertUtil;

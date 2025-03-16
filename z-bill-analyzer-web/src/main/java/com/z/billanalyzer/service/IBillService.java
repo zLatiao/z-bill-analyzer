@@ -1,7 +1,7 @@
 package com.z.billanalyzer.service;
 
-import com.z.billanalyzer.domain.BaseBill;
-import com.z.billanalyzer.domain.BaseBillDetail;
+import com.z.billanalyzer.domain.bill.BaseBill;
+import com.z.billanalyzer.domain.bill.BaseBillDetail;
 import com.z.billanalyzer.domain.QueryParam;
 import com.z.billanalyzer.domain.vo.*;
 import com.z.billanalyzer.domain.vo.echarts.TrendVO;

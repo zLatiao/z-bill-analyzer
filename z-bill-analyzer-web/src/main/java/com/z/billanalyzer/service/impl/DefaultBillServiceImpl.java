@@ -2,6 +2,8 @@ package com.z.billanalyzer.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.z.billanalyzer.domain.*;
+import com.z.billanalyzer.domain.bill.BaseBill;
+import com.z.billanalyzer.domain.bill.BaseBillDetail;
 import com.z.billanalyzer.domain.vo.*;
 import com.z.billanalyzer.domain.vo.echarts.TrendVO;
 import com.z.billanalyzer.enums.AmountTypeEnum;

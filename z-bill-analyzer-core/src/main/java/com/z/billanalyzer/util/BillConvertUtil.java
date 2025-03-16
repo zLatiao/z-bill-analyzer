@@ -1,6 +1,8 @@
 package com.z.billanalyzer.util;
 
-import com.z.billanalyzer.domain.*;
+import com.z.billanalyzer.domain.bill.AlipayBillDetail;
+import com.z.billanalyzer.domain.bill.CmbBillDetail;
+import com.z.billanalyzer.domain.bill.WxBillDetail;
 import com.z.billanalyzer.domain.parse.AlipayBillExcelParseResult;
 import com.z.billanalyzer.domain.parse.CmbBillExcelParseResult;
 import com.z.billanalyzer.domain.parse.WxBillExcelParseResult;
@@ -10,7 +12,6 @@ import com.z.billanalyzer.enums.AmountTypeEnum;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 
 public class BillConvertUtil {

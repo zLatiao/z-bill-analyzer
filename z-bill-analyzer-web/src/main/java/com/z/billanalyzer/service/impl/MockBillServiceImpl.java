@@ -1,6 +1,6 @@
 //package com.z.billanalyzer.service.impl;
 //
-//import com.z.billanalyzer.domain.BaseBill;
+//import com.z.billanalyzer.domain.bill.BaseBill;
 //import com.z.billanalyzer.domain.BillDetail;
 //import com.z.billanalyzer.domain.QueryParam;
 //import com.z.billanalyzer.domain.vo.echarts.TrendVO;

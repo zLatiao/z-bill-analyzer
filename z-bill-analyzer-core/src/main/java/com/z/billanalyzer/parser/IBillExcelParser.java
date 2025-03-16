@@ -1,7 +1,7 @@
 package com.z.billanalyzer.parser;
 
-import com.z.billanalyzer.domain.BaseBill;
-import com.z.billanalyzer.domain.BaseBillDetail;
+import com.z.billanalyzer.domain.bill.BaseBill;
+import com.z.billanalyzer.domain.bill.BaseBillDetail;
 
 import java.io.*;
 import java.util.List;
