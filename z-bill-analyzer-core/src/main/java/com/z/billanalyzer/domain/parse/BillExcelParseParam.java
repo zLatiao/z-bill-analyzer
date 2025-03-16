@@ -1,4 +1,4 @@
-package com.z.billanalyzer.entity;
+package com.z.billanalyzer.domain.parse;
 
 
 import com.z.billanalyzer.enums.BillSourceEnum;

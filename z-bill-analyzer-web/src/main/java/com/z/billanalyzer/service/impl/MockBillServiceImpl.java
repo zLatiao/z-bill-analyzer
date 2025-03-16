@@ -1,11 +1,11 @@
 package com.z.billanalyzer.service.impl;
 
-import com.z.billanalyzer.entity.BaseBillInfo;
-import com.z.billanalyzer.entity.Bill;
-import com.z.billanalyzer.entity.QueryParam;
-import com.z.billanalyzer.entity.vo.echarts.TrendVO;
+import com.z.billanalyzer.domain.BaseBillInfo;
+import com.z.billanalyzer.domain.Bill;
+import com.z.billanalyzer.domain.QueryParam;
+import com.z.billanalyzer.domain.vo.echarts.TrendVO;
 import com.z.billanalyzer.service.IBillService;
-import com.z.billanalyzer.entity.vo.*;
+import com.z.billanalyzer.domain.vo.*;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 

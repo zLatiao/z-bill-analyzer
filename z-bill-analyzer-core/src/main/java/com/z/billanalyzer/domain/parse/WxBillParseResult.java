@@ -1,4 +1,4 @@
-package com.z.billanalyzer.entity;
+package com.z.billanalyzer.domain.parse;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import lombok.Getter;
@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Setter
 @Getter
 @ToString
-public class WxBillRecord {
+public class WxBillParseResult {
     // 交易时间
     @ExcelProperty(value = "交易时间")
     private LocalDateTime transactionTime;

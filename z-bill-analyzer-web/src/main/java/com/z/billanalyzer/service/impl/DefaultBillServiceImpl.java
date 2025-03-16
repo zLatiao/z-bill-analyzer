@@ -1,12 +1,12 @@
 package com.z.billanalyzer.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import com.z.billanalyzer.entity.BaseBillInfo;
-import com.z.billanalyzer.entity.Bill;
-import com.z.billanalyzer.entity.BillAll;
-import com.z.billanalyzer.entity.QueryParam;
-import com.z.billanalyzer.entity.vo.*;
-import com.z.billanalyzer.entity.vo.echarts.TrendVO;
+import com.z.billanalyzer.domain.BaseBillInfo;
+import com.z.billanalyzer.domain.Bill;
+import com.z.billanalyzer.domain.BillAll;
+import com.z.billanalyzer.domain.QueryParam;
+import com.z.billanalyzer.domain.vo.*;
+import com.z.billanalyzer.domain.vo.echarts.TrendVO;
 import com.z.billanalyzer.enums.AmountTypeEnum;
 import com.z.billanalyzer.enums.BillSourceEnum;
 import com.z.billanalyzer.service.IBillService;
@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 

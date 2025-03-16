@@ -1,4 +1,4 @@
-package com.z.billanalyzer.entity;
+package com.z.billanalyzer.domain.parse;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 支付宝账单
+ * 支付宝账单解析结果
  *
  * @author zzz
  * @since 2024/5/23 23:40
@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @Setter
 @Getter
 @ToString
-public class AlipayBillRecord {
+public class AlipayBillParseResult {
     // 交易时间
     @ExcelProperty(value = "交易时间")
     private LocalDateTime transactionTime;

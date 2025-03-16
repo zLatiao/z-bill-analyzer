@@ -2,8 +2,8 @@ package com.z.billanalyzer.parser;
 
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.support.ExcelTypeEnum;
-import com.z.billanalyzer.entity.CmbBillInfo;
-import com.z.billanalyzer.entity.CmbBillRecord;
+import com.z.billanalyzer.domain.CmbBillInfo;
+import com.z.billanalyzer.domain.parse.CmbBillParseResult;
 import com.z.billanalyzer.listener.BillExcelListener;
 import com.z.billanalyzer.util.ReUtil;
 
@@ -25,7 +25,7 @@ import static com.z.billanalyzer.constant.GlobalConstant.DATE_TIME_FORMATTER;
  * @author z-latiao
  * @since 2025/2/26 17:43
  */
-public class CmbBillExcelParser implements IBillExcelParser<CmbBillInfo, CmbBillRecord> {
+public class CmbBillExcelParser implements IBillExcelParser<CmbBillInfo, CmbBillParseResult> {
 
     private static final List<Integer> excelReadNumbers = List.of(1, 2, 3, 4, 5);
 
@@ -49,16 +49,16 @@ public class CmbBillExcelParser implements IBillExcelParser<CmbBillInfo, CmbBill
 
 
     @Override
-    public List<CmbBillRecord> parseRecords(InputStream is) {
-        List<CmbBillRecord> cmbBillRecords = EasyExcel
+    public List<CmbBillParseResult> parseRecords(InputStream is) {
+        List<CmbBillParseResult> cmbBillParseResults = EasyExcel
                 .read(is)
-                .head(CmbBillRecord.class)
+                .head(CmbBillParseResult.class)
                 .excelType(ExcelTypeEnum.CSV)
                 .headRowNumber(7)
                 .sheet()
                 .doReadSync();
         // 最后两行是收入合计、支出合计
-        return cmbBillRecords.subList(0, cmbBillRecords.size() - 2);
+        return cmbBillParseResults.subList(0, cmbBillParseResults.size() - 2);
     }
 
     @Override

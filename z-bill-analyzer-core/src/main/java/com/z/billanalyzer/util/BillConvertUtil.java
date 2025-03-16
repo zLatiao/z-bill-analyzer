@@ -1,9 +1,9 @@
 package com.z.billanalyzer.util;
 
-import com.z.billanalyzer.entity.AlipayBillRecord;
-import com.z.billanalyzer.entity.CmbBillRecord;
-import com.z.billanalyzer.entity.WxBillRecord;
-import com.z.billanalyzer.entity.Bill;
+import com.z.billanalyzer.domain.parse.AlipayBillParseResult;
+import com.z.billanalyzer.domain.parse.CmbBillParseResult;
+import com.z.billanalyzer.domain.parse.WxBillParseResult;
+import com.z.billanalyzer.domain.Bill;
 import com.z.billanalyzer.enums.BillSourceEnum;
 import com.z.billanalyzer.enums.AmountTypeEnum;
 
@@ -16,16 +16,16 @@ public class BillConvertUtil {
 
     public static List<Bill> convert(List<?> bills) {
         return bills.stream().map(bill -> switch (bill) {
-            case WxBillRecord wxBillRecord -> convert(wxBillRecord);
-            case AlipayBillRecord alipayBillRecord -> convert(alipayBillRecord);
-            case CmbBillRecord cmbBillRecord -> convert(cmbBillRecord);
+            case WxBillParseResult wxBillParseResult -> convert(wxBillParseResult);
+            case AlipayBillParseResult alipayBillParseResult -> convert(alipayBillParseResult);
+            case CmbBillParseResult cmbBillParseResult -> convert(cmbBillParseResult);
             case null, default ->
                     throw new RuntimeException("wrong type: " + bills.getClass());
         }).toList();
     }
 
     // todo 解析的时候就把银行卡号解析出来
-    public static Bill convert(WxBillRecord billDTO) {
+    public static Bill convert(WxBillParseResult billDTO) {
         String billAmount = billDTO.getAmount();
         String amountStr;
         if (billAmount.contains("¥")) {
@@ -50,12 +50,12 @@ public class BillConvertUtil {
         return bill;
     }
 
-    public static List<Bill> convertListByWx(List<WxBillRecord> billDTOList) {
+    public static List<Bill> convertListByWx(List<WxBillParseResult> billDTOList) {
         return billDTOList.stream().map(BillConvertUtil::convert).toList();
     }
 
 
-    public static Bill convert(AlipayBillRecord billDTO) {
+    public static Bill convert(AlipayBillParseResult billDTO) {
         Bill bill = new Bill();
         bill.setAmount(billDTO.getAmount());
         bill.setAmountType(AmountTypeEnum.getEnum(billDTO.getIncomeOrExpense()).getType());
@@ -72,12 +72,21 @@ public class BillConvertUtil {
         return bill;
     }
 
-    public static List<Bill> convertListByAlipay(List<AlipayBillRecord> billDTOList) {
+    public static List<Bill> convertListByAlipay(List<AlipayBillParseResult> billDTOList) {
         return billDTOList.stream().map(BillConvertUtil::convert).toList();
     }
 
-    // todo 解析的时候就把银行卡号解析出来
-    public static Bill convert(CmbBillRecord billDTO) {
+    /**
+     * 招行的交易备注有一些规律：
+     * 交易备注普遍采用「支付平台-应用场景-商户名称」的三级结构（例如："美团-美团外卖App袁记云饺"），层级间用短横线分隔。其中：
+     * 2级	平台-商户	支付宝-高德打车
+     * 3级	平台-场景-商户	美团-美团外卖App袁记云饺
+     * 4级	平台-支付方式-场景-商户	财付通-微信支付-停车场-捷顺
+     *
+     * @param billDTO
+     * @return
+     */
+    public static Bill convert(CmbBillParseResult billDTO) {
         Bill bill = new Bill();
         if (billDTO.getIncome() != null) {
             bill.setAmount(billDTO.getIncome());
@@ -90,10 +99,15 @@ public class BillConvertUtil {
         bill.setSource(BillSourceEnum.CMB.ordinal());
         bill.setTransactionTime(LocalDateTime.parse((billDTO.getDate() + " " + billDTO.getTime()).replace("\t", ""), DateTimeFormatter.ofPattern("yyyyMMdd HH:mm:ss")));
         bill.setRemark(billDTO.getRemark());
+        if (billDTO.getRemark() != null && !billDTO.getRemark().isBlank()) {
+            String[] remarkArr = billDTO.getRemark().split("-");
+            // 从备注里解析出交易对方
+            bill.setCounterparty(remarkArr[remarkArr.length - 1]);
+        }
         return bill;
     }
 
-    public static List<Bill> convertListByCmb(List<CmbBillRecord> billDTOList) {
+    public static List<Bill> convertListByCmb(List<CmbBillParseResult> billDTOList) {
         return billDTOList.stream().map(BillConvertUtil::convert).toList();
     }
 }

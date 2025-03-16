@@ -1,6 +1,6 @@
-package com.z.billanalyzer.entity.vo;
+package com.z.billanalyzer.domain.vo;
 
-import com.z.billanalyzer.entity.Bill;
+import com.z.billanalyzer.domain.Bill;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

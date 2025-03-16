@@ -1,6 +1,7 @@
 package com.z.billanalyzer;
 
-import com.z.billanalyzer.entity.*;
+import com.z.billanalyzer.domain.*;
+import com.z.billanalyzer.domain.parse.BillExcelParseParam;
 import com.z.billanalyzer.enums.BillSourceEnum;
 import com.z.billanalyzer.parser.AlipayBillExcelParser;
 import com.z.billanalyzer.parser.CmbBillExcelParser;

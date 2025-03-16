@@ -1,4 +1,4 @@
-package com.z.billanalyzer.entity.vo;
+package com.z.billanalyzer.domain.vo;
 
 public record ParseResultVO(Integer id) {
 }

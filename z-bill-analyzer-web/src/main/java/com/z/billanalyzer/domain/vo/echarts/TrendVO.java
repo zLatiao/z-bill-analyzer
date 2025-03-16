@@ -1,4 +1,4 @@
-package com.z.billanalyzer.entity.vo.echarts;
+package com.z.billanalyzer.domain.vo.echarts;
 
 import java.math.BigDecimal;
 import java.util.List;

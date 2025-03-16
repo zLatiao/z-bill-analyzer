@@ -1,7 +1,7 @@
 package com.z.billanalyzer;
 
 import cn.hutool.json.JSONUtil;
-import com.z.billanalyzer.entity.Bill;
+import com.z.billanalyzer.domain.Bill;
 
 import java.io.IOException;
 import java.nio.file.Files;

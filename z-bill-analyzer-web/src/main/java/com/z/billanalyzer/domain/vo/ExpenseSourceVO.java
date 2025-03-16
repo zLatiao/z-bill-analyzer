@@ -1,4 +1,4 @@
-package com.z.billanalyzer.entity.vo;
+package com.z.billanalyzer.domain.vo;
 
 /**
  * 支出来源数据视图

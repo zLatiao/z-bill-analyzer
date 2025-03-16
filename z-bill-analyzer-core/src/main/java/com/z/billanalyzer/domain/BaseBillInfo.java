@@ -1,4 +1,4 @@
-package com.z.billanalyzer.entity;
+package com.z.billanalyzer.domain;
 
 import lombok.Data;
 import lombok.experimental.Accessors;

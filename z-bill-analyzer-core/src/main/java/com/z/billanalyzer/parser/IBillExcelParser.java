@@ -1,8 +1,8 @@
 package com.z.billanalyzer.parser;
 
 import com.z.billanalyzer.util.BillConvertUtil;
-import com.z.billanalyzer.entity.BaseBillInfo;
-import com.z.billanalyzer.entity.Bill;
+import com.z.billanalyzer.domain.BaseBillInfo;
+import com.z.billanalyzer.domain.Bill;
 
 import java.io.*;
 import java.util.List;

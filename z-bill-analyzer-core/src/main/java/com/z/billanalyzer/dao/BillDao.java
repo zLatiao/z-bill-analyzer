@@ -1,6 +1,9 @@
 package com.z.billanalyzer.dao;
 
-import com.z.billanalyzer.entity.*;
+import com.z.billanalyzer.domain.*;
+import com.z.billanalyzer.domain.parse.AlipayBillParseResult;
+import com.z.billanalyzer.domain.parse.CmbBillParseResult;
+import com.z.billanalyzer.domain.parse.WxBillParseResult;
 import com.z.billanalyzer.parser.AlipayBillExcelParser;
 import com.z.billanalyzer.parser.CmbBillExcelParser;
 import com.z.billanalyzer.parser.IBillExcelParser;
@@ -17,16 +20,16 @@ import java.util.List;
  */
 public class BillDao {
     public static void main(String[] args) throws SQLException, IOException {
-        IBillExcelParser<WxBillInfo, WxBillRecord> wxBillParser = new WxBillExcelParser();
+        IBillExcelParser<WxBillInfo, WxBillParseResult> wxBillParser = new WxBillExcelParser();
         WxBillInfo wxBillInfo = wxBillParser.parse(new File("C:\\Users\\anjun\\Desktop\\账单\\微信支付账单(20240216-20240516).csv"));
         System.out.println(wxBillInfo);
 
-        IBillExcelParser<AlipayBillInfo, AlipayBillRecord> alipayBillParser = new AlipayBillExcelParser();
+        IBillExcelParser<AlipayBillInfo, AlipayBillParseResult> alipayBillParser = new AlipayBillExcelParser();
         AlipayBillInfo alipayBillInfo = alipayBillParser.parse(new File("C:\\Users\\anjun\\Desktop\\账单\\alipay_record_20250221_103151.csv"));
         System.out.println(alipayBillInfo);
 
 
-        IBillExcelParser<CmbBillInfo, CmbBillRecord> cmbBillParser = new CmbBillExcelParser();
+        IBillExcelParser<CmbBillInfo, CmbBillParseResult> cmbBillParser = new CmbBillExcelParser();
         CmbBillInfo cmbBillInfo = cmbBillParser.parse(new File("C:\\Users\\anjun\\Desktop\\账单\\CMB_6214--------9016_20230516_20240516.csv"));
         System.out.println(cmbBillInfo);
 

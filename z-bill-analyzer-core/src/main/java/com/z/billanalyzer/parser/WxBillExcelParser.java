@@ -3,9 +3,9 @@ package com.z.billanalyzer.parser;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import com.z.billanalyzer.constant.GlobalConstant;
-import com.z.billanalyzer.entity.Bill;
-import com.z.billanalyzer.entity.WxBillInfo;
-import com.z.billanalyzer.entity.WxBillRecord;
+import com.z.billanalyzer.domain.Bill;
+import com.z.billanalyzer.domain.WxBillInfo;
+import com.z.billanalyzer.domain.parse.WxBillParseResult;
 import com.z.billanalyzer.enums.BankEnum;
 import com.z.billanalyzer.listener.BillExcelListener;
 import com.z.billanalyzer.util.ReUtil;
@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
  * @author z-latiao
  * @since 2025/2/26 15:28
  */
-public class WxBillExcelParser implements IBillExcelParser<WxBillInfo, WxBillRecord> {
+public class WxBillExcelParser implements IBillExcelParser<WxBillInfo, WxBillParseResult> {
 
     private static final List<Integer> excelReadNumbers = List.of(1, 2, 3, 4, 6, 7, 8, 9);
 
@@ -50,11 +50,11 @@ public class WxBillExcelParser implements IBillExcelParser<WxBillInfo, WxBillRec
     );
 
     @Override
-    public List<WxBillRecord> parseRecords(InputStream is) {
+    public List<WxBillParseResult> parseRecords(InputStream is) {
         // todo 这里可能要加个文件名判断是新的还是旧的
         return EasyExcel.read(is)
                 .autoCloseStream(false)
-                .head(WxBillRecord.class)
+                .head(WxBillParseResult.class)
 //                .charset(Charset.forName("GBK"))
                 .excelType(ExcelTypeEnum.CSV)
                 .headRowNumber(17)
@@ -95,7 +95,7 @@ public class WxBillExcelParser implements IBillExcelParser<WxBillInfo, WxBillRec
     }
 
     @Override
-    public List<Bill> convert(List<WxBillRecord> billRecords) {
+    public List<Bill> convert(List<WxBillParseResult> billRecords) {
         List<Bill> bills = IBillExcelParser.super.convert(billRecords);
         // TODO 2025/2/27 这里逻辑要不要改成到afterParse里去做
         for (Bill bill : bills) {

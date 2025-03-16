@@ -1,6 +1,6 @@
 package com.z.billanalyzer.util;
 
-import com.z.billanalyzer.entity.*;
+import com.z.billanalyzer.domain.*;
 import com.z.billanalyzer.enums.BankEnum;
 import lombok.extern.slf4j.Slf4j;
 

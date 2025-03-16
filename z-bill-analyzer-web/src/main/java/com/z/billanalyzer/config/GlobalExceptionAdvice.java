@@ -1,6 +1,6 @@
 package com.z.billanalyzer.config;
 
-import com.z.billanalyzer.entity.vo.Result;
+import com.z.billanalyzer.domain.vo.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;

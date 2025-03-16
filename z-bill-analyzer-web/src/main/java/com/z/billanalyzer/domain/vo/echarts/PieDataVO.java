@@ -1,4 +1,4 @@
-package com.z.billanalyzer.entity.vo.echarts;
+package com.z.billanalyzer.domain.vo.echarts;
 
 /**
  * 饼图 数据

@@ -3,9 +3,9 @@ package com.z.billanalyzer.parser;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import com.z.billanalyzer.constant.GlobalConstant;
-import com.z.billanalyzer.entity.AlipayBillInfo;
-import com.z.billanalyzer.entity.AlipayBillRecord;
-import com.z.billanalyzer.entity.Bill;
+import com.z.billanalyzer.domain.AlipayBillInfo;
+import com.z.billanalyzer.domain.parse.AlipayBillParseResult;
+import com.z.billanalyzer.domain.Bill;
 import com.z.billanalyzer.enums.BankEnum;
 import com.z.billanalyzer.listener.BillExcelListener;
 import com.z.billanalyzer.util.ReUtil;
@@ -27,7 +27,7 @@ import static com.z.billanalyzer.constant.GlobalConstant.DATE_TIME_FORMATTER;
  * @author z-latiao
  * @since 2025/2/26 15:58
  */
-public class AlipayBillExcelParser implements IBillExcelParser<AlipayBillInfo, AlipayBillRecord> {
+public class AlipayBillExcelParser implements IBillExcelParser<AlipayBillInfo, AlipayBillParseResult> {
     private static final List<Integer> excelReadNumbers = List.of(2, 3, 4, 5, 6, 7, 8, 9, 10);
 
     private static final int excelStopNumber = 10;
@@ -54,9 +54,9 @@ public class AlipayBillExcelParser implements IBillExcelParser<AlipayBillInfo, A
     );
 
     @Override
-    public List<AlipayBillRecord> parseRecords(InputStream is) {
+    public List<AlipayBillParseResult> parseRecords(InputStream is) {
         return EasyExcel.read(is)
-                .head(AlipayBillRecord.class)
+                .head(AlipayBillParseResult.class)
                 .autoCloseStream(false)
                 .charset(Charset.forName("GBK"))
                 .excelType(ExcelTypeEnum.CSV)
@@ -97,7 +97,7 @@ public class AlipayBillExcelParser implements IBillExcelParser<AlipayBillInfo, A
     }
 
     @Override
-    public List<Bill> convert(List<AlipayBillRecord> billRecords) {
+    public List<Bill> convert(List<AlipayBillParseResult> billRecords) {
         List<Bill> bills = IBillExcelParser.super.convert(billRecords);
         // TODO 2025/2/27 这里逻辑要不要改成到afterParse里去做
         for (Bill bill : bills) {

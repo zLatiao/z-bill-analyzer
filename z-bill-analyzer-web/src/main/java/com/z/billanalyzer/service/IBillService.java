@@ -1,12 +1,11 @@
 package com.z.billanalyzer.service;
 
-import com.z.billanalyzer.entity.BaseBillInfo;
-import com.z.billanalyzer.entity.Bill;
-import com.z.billanalyzer.entity.QueryParam;
-import com.z.billanalyzer.entity.vo.*;
-import com.z.billanalyzer.entity.vo.echarts.TrendVO;
+import com.z.billanalyzer.domain.BaseBillInfo;
+import com.z.billanalyzer.domain.Bill;
+import com.z.billanalyzer.domain.QueryParam;
+import com.z.billanalyzer.domain.vo.*;
+import com.z.billanalyzer.domain.vo.echarts.TrendVO;
 
-import java.util.Arrays;
 import java.util.List;
 
 public interface IBillService {

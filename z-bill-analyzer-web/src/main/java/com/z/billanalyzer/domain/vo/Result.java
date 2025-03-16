@@ -1,4 +1,4 @@
-package com.z.billanalyzer.entity.vo;
+package com.z.billanalyzer.domain.vo;
 
 public record Result<T>(Integer code, String msg, T data) {
     public static <T> Result<T> success() {

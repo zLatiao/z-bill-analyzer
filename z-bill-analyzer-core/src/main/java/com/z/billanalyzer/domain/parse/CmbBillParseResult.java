@@ -1,4 +1,4 @@
-package com.z.billanalyzer.entity;
+package com.z.billanalyzer.domain.parse;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import lombok.Getter;
@@ -14,7 +14,7 @@ import java.math.BigDecimal;
  */
 @Setter
 @Getter
-public class CmbBillRecord {
+public class CmbBillParseResult {
     // 交易日期
     @ExcelProperty(value = "交易日期")
     private String date;
