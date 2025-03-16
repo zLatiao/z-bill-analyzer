@@ -3,8 +3,10 @@ package com.z.billanalyzer.domain.vo;
 import com.z.billanalyzer.domain.bill.BaseBillDetail;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
