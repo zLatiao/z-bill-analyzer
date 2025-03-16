@@ -208,7 +208,7 @@ public class DefaultBillServiceImpl implements IBillService {
     }
 
     @Override
-    public PageResult<BillDetailVO> getPage(QueryParam param) {
+    public PageResult<? extends BaseBillDetail> getPage(QueryParam param) {
         Integer pageIndex = param.getPageIndex();
         Integer pageSize = param.getPageSize();
 
@@ -221,18 +221,9 @@ public class DefaultBillServiceImpl implements IBillService {
         }
         int toIndex = Math.min(fromIndex + pageSize, total);
 
-        List<BillDetailVO> pageData = billDetails.subList(fromIndex, toIndex).stream()
-                .map(this::convertToVo)
-                .toList();
+        List<? extends BaseBillDetail> pageData = billDetails.subList(fromIndex, toIndex).stream().toList();
 
         return new PageResult<>(pageData, total);
-    }
-
-    private BillDetailVO convertToVo(BaseBillDetail billDetail) {
-        BillDetailVO billVO = BeanUtil.copyProperties(billDetail, BillDetailVO.class);
-        billVO.setAmountTypeStr(AmountTypeEnum.getEnum(billVO.getAmountType()).getDesc());
-        billVO.setSourceStr(BillSourceEnum.getNameBy(billVO.getSource()));
-        return billVO;
     }
 
     @Override

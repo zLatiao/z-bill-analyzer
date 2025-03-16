@@ -471,11 +471,13 @@
 <table id="transactionTable">
     <thead>
     <tr>
-        <th onclick="sortTable('transactionTime')">日期 ▼</th>
+        <th onclick="sortTable('transactionTime')">时间 ▼</th>
         <th onclick="sortTable('transactionType')">分类 ▼</th>
+        <th onclick="sortTable('counterparty')">交易对方 ▼</th>
         <th onclick="sortTable('amount')">金额 ▼</th>
         <th onclick="sortTable('amountTypeStr')">收/支 ▼</th>
         <th onclick="sortTable('sourceStr')">来源 ▼</th>
+        <th onclick="sortTable('remark')">备注 ▼</th>
     </tr>
     </thead>
     <tbody id="transactionBody"></tbody>
@@ -691,9 +693,11 @@
                 transactions: list.map(t => ({
                     transactionTime: t.transactionTime,
                     transactionType: t.transactionType,
+                    counterparty: t.counterparty,
                     amountTypeStr: t.amountTypeStr,
                     amount: t.amount,
                     sourceStr: t.sourceStr,
+                    remark: t.remark,
                 }))
             };
         } catch (error) {
@@ -878,9 +882,11 @@
         <tr>
             <td>${item.transactionTime}</td>
             <td>${item.transactionType}</td>
+            <td>${item.counterparty}</td>
             <td>${item.amount.toFixed(2)}</td>
             <td>${item.amountTypeStr}</td>
             <td>${item.sourceStr}</td>
+            <td>${item.remark}</td>
         </tr>
     `).join('');
     }

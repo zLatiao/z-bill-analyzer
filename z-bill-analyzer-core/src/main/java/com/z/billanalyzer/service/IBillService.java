@@ -70,9 +70,9 @@ public interface IBillService {
      * 获取分页
      *
      * @param param
-     * @return PageResult<BillVO>
+     * @return PageResult<? extends BaseBillDetail>
      */
-    PageResult<BillDetailVO> getPage(QueryParam param);
+    PageResult<? extends BaseBillDetail> getPage(QueryParam param);
 
     /**
      * 获取支出来源数据

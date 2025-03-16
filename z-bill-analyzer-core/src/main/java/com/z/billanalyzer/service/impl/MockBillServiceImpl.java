@@ -76,15 +76,15 @@ public class MockBillServiceImpl implements IBillService {
     }
 
     @Override
-    public PageResult<BillDetailVO> getPage(QueryParam param) {
+    public PageResult<? extends BaseBillDetail> getPage(QueryParam param) {
         // 生成50条测试数据
-        List<BillDetailVO> allData = new ArrayList<>();
+        List<BaseBillDetail> allData = new ArrayList<>();
         LocalDateTime baseDate = LocalDateTime.of(LocalDate.of(2025, 1, 1), LocalTime.MIN);
         for (int i = 0; i < 50; i++) {
-            BillDetailVO t = new BillDetailVO();
+            BaseBillDetail t = new BaseBillDetail();
             t.setAmount(new BigDecimal(80 + i * 10));
-            t.setAmountTypeStr(i % 2 == 0 ? "收入" : "支出");
-            t.setSourceStr(i % 3 == 0 ? "支付宝" : (i % 3 == 1 ? "微信" : "银行卡"));
+//            t.setAmountTypeStr(i % 2 == 0 ? "收入" : "支出");
+//            t.setSourceStr(i % 3 == 0 ? "支付宝" : (i % 3 == 1 ? "微信" : "银行卡"));
             allData.add(t);
         }
 

@@ -1,14 +1,17 @@
 package com.z.billanalyzer.controller;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.z.billanalyzer.ParserCore;
 import com.z.billanalyzer.domain.PageResult;
 import com.z.billanalyzer.domain.bill.BaseBill;
+import com.z.billanalyzer.domain.bill.BaseBillDetail;
 import com.z.billanalyzer.domain.parse.BillExcelParseParam;
 import com.z.billanalyzer.domain.param.QueryParam;
 import com.z.billanalyzer.domain.vo.*;
 import com.z.billanalyzer.domain.vo.echarts.PieDataVO;
 import com.z.billanalyzer.domain.vo.TrendVO;
 import com.z.billanalyzer.enums.AmountTypeEnum;
+import com.z.billanalyzer.enums.BillSourceEnum;
 import com.z.billanalyzer.parser.FileNameParser;
 import com.z.billanalyzer.service.IBillService;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -80,7 +84,20 @@ public class BillController {
     @GetMapping("/page")
     public Result<PageResult<BillDetailVO>> page(@CookieValue(value = "file_session") Integer id, QueryParam param) {
         param.setId(id);
-        return Result.success(billService.getPage(param));
+        PageResult<? extends BaseBillDetail> page = billService.getPage(param);
+        List<? extends BaseBillDetail> list = page.getList();
+        if (list == null) {
+            return Result.success(new PageResult<>(Collections.emptyList(), page.getTotal()));
+        }
+        List<BillDetailVO> list1 = list.stream().map(this::convertToVo).toList();
+        return Result.success(new PageResult<>(list1, page.getTotal()));
+    }
+
+    private BillDetailVO convertToVo(BaseBillDetail billDetail) {
+        BillDetailVO billVO = BeanUtil.copyProperties(billDetail, BillDetailVO.class);
+        billVO.setAmountTypeStr(AmountTypeEnum.getEnum(billVO.getAmountType()).getDesc());
+        billVO.setSourceStr(BillSourceEnum.getNameBy(billVO.getSource()));
+        return billVO;
     }
 
     /**
