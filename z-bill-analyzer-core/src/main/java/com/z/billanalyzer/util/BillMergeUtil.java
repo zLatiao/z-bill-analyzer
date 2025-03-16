@@ -2,6 +2,7 @@ package com.z.billanalyzer.util;
 
 import com.z.billanalyzer.domain.bill.*;
 import com.z.billanalyzer.enums.BankEnum;
+import com.z.billanalyzer.enums.MergeTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
@@ -88,7 +89,7 @@ public class BillMergeUtil {
                             .filter(targetDetail -> Objects.equals(sourceDetail.getAmount(), targetDetail.getAmount()))
                             .filter(targetDetail -> Objects.equals(sourceDetail.getTransactionType(), targetDetail.getTransactionType()))
                             .filter(targetDetail -> Objects.equals(sourceDetail.getRemark(), targetDetail.getRemark()))
-                            .forEach(targetDetail -> setMerge(targetDetail, 0)));
+                            .forEach(targetDetail -> setMerge(targetDetail, MergeTypeEnum.SAME_SOURCE)));
         }
 
     }
@@ -133,7 +134,7 @@ public class BillMergeUtil {
 
                 if (filterBillDetails.size() == 1) {
                     CmbBillDetail targetDetail = filterBillDetails.getFirst();
-                    setMerge(targetDetail, 1);
+                    setMerge(targetDetail, MergeTypeEnum.BANK);
                     return;
                 } else if (filterBillDetails.size() > 1) {
                     log.error("匹配到多个费用：{}， \n{}", sourceBillDetails, filterBillDetails);
@@ -147,7 +148,7 @@ public class BillMergeUtil {
                         .collect(Collectors.toList());
                 if (filterBills2.size() == 1) {
                     CmbBillDetail targetDetail = filterBills2.getFirst();
-                    setMerge(targetDetail, 1);
+                    setMerge(targetDetail, MergeTypeEnum.BANK);
                     sourceBillDetails.forEach(bill -> {
                     });
                     return;
@@ -162,7 +163,7 @@ public class BillMergeUtil {
                         .toList();
                 if (filterBills3.size() == 1) {
                     CmbBillDetail targetDetail = filterBills3.getFirst();
-                    setMerge(targetDetail, 1);
+                    setMerge(targetDetail, MergeTypeEnum.BANK);
                     return;
                 } else if (filterBills2.size() > 1) {
                     log.error("匹配到多个费用：{}， \n{}", sourceBillDetails, filterBills2);
@@ -177,7 +178,7 @@ public class BillMergeUtil {
 //                    log.error("找不到匹配的招商银行账单记录：{}", sourceBills);
                 } else if (filterBills4.size() == 1) {
                     CmbBillDetail targetDetail = filterBills4.getFirst();
-                    setMerge(targetDetail, 1);
+                    setMerge(targetDetail, MergeTypeEnum.BANK);
                 } else {
                     log.error("匹配到多个费用：{}， \n{}", sourceBillDetails, filterBills2);
                 }
@@ -195,7 +196,7 @@ public class BillMergeUtil {
                 .filter(sourceDetail -> !sourceDetail.isMerge())
                 .forEach(sourceDetail -> targetBill.getBillDetails().stream()
                         .filter(targetDetail -> sourceDetail.getTransactionNo().equals(targetDetail.getTransactionNo()))
-                        .forEach(targetDetail -> setMerge(targetDetail, 0)));
+                        .forEach(targetDetail -> setMerge(targetDetail, MergeTypeEnum.SAME_SOURCE)));
     }
 
     public static void merge(WxBill sourceBill, CmbBill targetBill) {
@@ -222,7 +223,7 @@ public class BillMergeUtil {
 
                     if (filterBillDetails.size() == 1) {
                         CmbBillDetail targetDetail = filterBillDetails.getFirst();
-                        setMerge(targetDetail, 1);
+                        setMerge(targetDetail, MergeTypeEnum.BANK);
                         return;
                     }
 
@@ -240,7 +241,7 @@ public class BillMergeUtil {
 //                        log.error("找不到匹配的招商银行账单记录：{}", sourceDetail);
                     } else if (filterBills2.size() == 1) {
                         CmbBillDetail targetDetail = filterBills2.getFirst();
-                        setMerge(targetDetail, 1);
+                        setMerge(targetDetail, MergeTypeEnum.BANK);
                     } else {
                         log.error("匹配到多个费用：{}， \n{}", sourceDetail, filterBills2);
                     }
@@ -257,11 +258,11 @@ public class BillMergeUtil {
                 .filter(sourceDetail -> !sourceDetail.isMerge())
                 .forEach(sourceDetail -> targetBill.getBillDetails().stream()
                         .filter(targetDetail -> sourceDetail.getTransactionNo().equals(targetDetail.getTransactionNo()))
-                        .forEach(targetDetail -> setMerge(targetDetail, 0)));
+                        .forEach(targetDetail -> setMerge(targetDetail, MergeTypeEnum.SAME_SOURCE)));
     }
 
-    public static void setMerge(BaseBillDetail billDetail, Integer mergeType) {
+    public static void setMerge(BaseBillDetail billDetail, MergeTypeEnum mergeTypeEnum) {
         billDetail.setMerge(true);
-        billDetail.setMergeType(mergeType);
+        billDetail.setMergeType(mergeTypeEnum.getType());
     }
 }

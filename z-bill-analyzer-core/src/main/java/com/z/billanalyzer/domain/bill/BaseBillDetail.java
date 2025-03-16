@@ -60,7 +60,7 @@ public class BaseBillDetail {
     private boolean isMerge = false;
 
     /**
-     * 0同类相同，1银行卡
+     * 0相同来源，1银行
      */
     private Integer mergeType;
 
