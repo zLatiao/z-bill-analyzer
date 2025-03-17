@@ -378,6 +378,33 @@
             margin-left: 10px;
         }
 
+        /* 修改选中项的背景色为红色 */
+        .dropdown-options li.selected {
+            background: #ffebee; /* 浅红色背景 */
+            color: #d32f2f; /* 深红色文字 */
+            position: relative;
+        }
+
+        .dropdown-options li.selected::after {
+            content: "✓";
+            position: absolute;
+            right: 15px;
+            color: #d32f2f; /* 深红色对勾 */
+        }
+
+        /* 修改多选框标签的样式为红色 */
+        .tag {
+            background: #ffebee; /* 浅红色背景 */
+            color: #d32f2f; /* 深红色文字 */
+            border-radius: 4px;
+            padding: 4px 25px 4px 10px;
+            font-size: 12px;
+        }
+
+        .tag:hover {
+            background: #ffcdd2; /* 更深的红色背景 */
+        }
+
     </style>
 </head>
 <body>
@@ -748,8 +775,22 @@
 
     // 新增刷新数据函数
     function refreshData() {
-        initPage(); // 复用原有初始化逻辑
+        // 保存当前选中的选项
+        const selectedSourceValues = Array.from(document.getElementById('filterSourceList').selectedOptions).map(option => option.value);
+
+        initPage().then(() => {
+            // 数据加载完成后，重新应用选中的选项
+            selectedSourceValues.forEach(value => {
+                const option = document.querySelector(`#filterSourceList option[value="${value}"]`);
+                if (option) {
+                    option.selected = true;
+                    selectedOptions.add(value);
+                }
+            });
+            updateSelectedTags(); // 更新显示的标签
+        });
     }
+
 
     // 图表初始化
     function initCharts() {
