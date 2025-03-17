@@ -412,6 +412,15 @@
             font-family: Arial, sans-serif;
             margin-right: 10px; /* 确保与右边的按钮有间距 */
         }
+        /* 确保下拉列表可见性 */
+        .dropdown-options {
+            display: none; /* 默认隐藏 */
+            /* 其他现有样式保持不变 */
+        }
+
+        .dropdown-options.show {
+            display: block; /* 通过添加show类显示 */
+        }
 
     </style>
 </head>
@@ -1071,7 +1080,7 @@
         if (selectedDuplicateOptions.has(value)) {
             selectedDuplicateOptions.delete(value);
             option.selected = false;
-            element.classList.remove('selected');
+            element.classList.remove('selected'); // 直接使用当前元素
         } else {
             selectedDuplicateOptions.add(value);
             option.selected = true;
@@ -1079,8 +1088,6 @@
         }
 
         updateSelectedDuplicateTags();
-
-        // 新增：当有选择时隐藏placeholder
         const searchInput = document.getElementById('duplicateSearchInput');
         searchInput.placeholder = selectedDuplicateOptions.size > 0 ? '' : '过滤重复项';
     }
@@ -1105,10 +1112,14 @@
         const option = document.querySelector(`#duplicateTypeList option[value="${value}"]`);
         selectedDuplicateOptions.delete(value);
         option.selected = false;
-        document.querySelector(`.dropdown-options li[onclick*="${value}"]`).classList.remove('selected');
+
+        // 限定在第二个多选框容器内查找
+        const dropdown = document.querySelectorAll('.custom-multiselect')[1];
+        const listItem = dropdown.querySelector(`li[onclick*="${value}"]`);
+        listItem.classList.remove('selected');
+
         updateSelectedDuplicateTags();
 
-        // 新增：当没有选择时恢复placeholder
         const searchInput = document.getElementById('duplicateSearchInput');
         searchInput.placeholder = selectedDuplicateOptions.size > 0 ? '' : '过滤重复项';
     }
