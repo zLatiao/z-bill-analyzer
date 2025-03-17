@@ -788,6 +788,12 @@
             const searchInput = document.getElementById('searchInput');
             searchInput.placeholder = '过滤来源';
 
+            const tagsContainer1 = document.querySelectorAll('.tags-container')[1];
+            tagsContainer1.innerHTML = ''; // 清空标签容器
+
+            const duplicateSearchInput = document.getElementById('duplicateSearchInput');
+            duplicateSearchInput.placeholder = '过滤重复项'; // 确保 placeholder 正确设置
+
             const data = await fetchData();
             appData = data;
 
