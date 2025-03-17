@@ -163,17 +163,6 @@
             gap: 5px;
         }
 
-        .tag {
-            background: #409EFF20;
-            color: #409EFF;
-            border-radius: 4px;
-            padding: 4px 25px 4px 10px;
-            font-size: 12px;
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-        }
-
         .remove-tag {
             position: absolute;
             right: 6px;
@@ -260,11 +249,21 @@
             opacity: 0;
         }
         .tag {
-            margin: 2px 4px; /* 减少间距 */
-            padding: 4px 8px; /* 缩小内边距 */
-            font-size: 12px; /* 调小字体 */
-            max-width: 120px; /* 限制单标签宽度 */
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            text-decoration: line-through; /* 添加横线贯穿效果 */
+            color: #409EFF; /* 保持原有颜色 */
+            background: #409EFF20; /* 保持原有背景色 */
+            border-radius: 4px; /* 保持原有圆角 */
+            padding: 4px 25px 4px 10px; /* 保持原有内边距 */
+            font-size: 12px; /* 保持原有字体大小 */
         }
+
+        .tag:hover {
+            text-decoration: none; /* 移除横线贯穿效果 */
+        }
+
         /* 统一筛选控件高度 */
         .date-range, .custom-multiselect .selected-tags {
             height: 40px;
@@ -737,6 +736,7 @@
             loading.remove();
         }
     }
+
 
     // 新增刷新数据函数
     function refreshData() {
