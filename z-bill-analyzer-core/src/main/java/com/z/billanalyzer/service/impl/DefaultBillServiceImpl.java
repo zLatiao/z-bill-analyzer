@@ -14,10 +14,7 @@ import com.z.billanalyzer.service.IBillService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -53,6 +50,9 @@ public class DefaultBillServiceImpl implements IBillService {
         }
         if (param.getSourceList() != null && !param.getSourceList().isEmpty()) {
             stream = stream.filter(bill -> param.getSourceList().contains(bill.getSource()));
+        }
+        if (param.getFilterSourceList() != null && !param.getFilterSourceList().isEmpty()) {
+            stream = stream.filter(bill -> !param.getFilterSourceList().contains(bill.getSource()));
         }
         if (param.getFilterMergeType() != null && !param.getFilterMergeType().isEmpty()) {
             stream = stream.filter(bill -> !bill.isMerge() || (bill.getMergeType() != null && !param.getFilterMergeType().contains(bill.getMergeType())));

@@ -46,6 +46,11 @@ public class QueryParam {
     private List<Integer> sourceList;
 
     /**
+     * 过滤账单来源列表
+     */
+    private List<Integer> filterSourceList;
+
+    /**
      * 过滤合并类型列表
      */
     private List<Integer> filterMergeType;

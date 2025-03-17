@@ -397,7 +397,7 @@
                 </div>
                 <input type="text"
                        class="search-input"
-                       placeholder="选择来源"
+                       placeholder="过滤来源"
                        id="searchInput" oninput="filterOptions(this.value)">
             </div>
 
@@ -411,7 +411,7 @@
             </div>
 
             <!-- 隐藏的原始select用于表单提交 -->
-            <select id="sourceList" name="sourceList" multiple hidden>
+            <select id="filterSourceList" name="filterSourceList" multiple hidden>
                 <option value="0">微信</option>
                 <option value="1">支付宝</option>
                 <option value="2">招商银行</option>
@@ -552,7 +552,7 @@
     }
 
     function toggleOption(value, element) {
-        const option = document.querySelector(`#sourceList option[value="${value}"]`);
+        const option = document.querySelector(`#filterSourceList option[value="${value}"]`);
 
         if (selectedOptions.has(value)) {
             selectedOptions.delete(value);
@@ -568,7 +568,7 @@
 
         // 新增：当有选择时隐藏placeholder
         const searchInput = document.getElementById('searchInput');
-        searchInput.placeholder = selectedOptions.size > 0 ? '' : '选择来源';
+        searchInput.placeholder = selectedOptions.size > 0 ? '' : '过滤来源';
     }
 
     function updateSelectedTags() {
@@ -576,7 +576,7 @@
         container.innerHTML = '';
 
         selectedOptions.forEach(value => {
-            const text = document.querySelector(`#sourceList option[value="${value}"]`).textContent;
+            const text = document.querySelector(`#filterSourceList option[value="${value}"]`).textContent;
             const tag = document.createElement('div');
             tag.className = 'tag';
             tag.innerHTML = `
@@ -588,7 +588,7 @@
     }
 
     function removeTag(value) {
-        const option = document.querySelector(`#sourceList option[value="${value}"]`);
+        const option = document.querySelector(`#filterSourceList option[value="${value}"]`);
         selectedOptions.delete(value);
         option.selected = false;
         document.querySelector(`.dropdown-options li[onclick*="${value}"]`).classList.remove('selected');
@@ -596,7 +596,7 @@
 
         // 新增：当没有选择时恢复placeholder
         const searchInput = document.getElementById('searchInput');
-        searchInput.placeholder = selectedOptions.size > 0 ? '' : '选择来源';
+        searchInput.placeholder = selectedOptions.size > 0 ? '' : '过滤来源';
     }
 
     function filterOptions(keyword) {
@@ -642,12 +642,12 @@
             const endDate = document.getElementById('endDate').value;
 
             // 获取多选值并转换为逗号分隔字符串
-            const sourceElements = document.getElementById('sourceList').selectedOptions;
+            const sourceElements = document.getElementById('filterSourceList').selectedOptions;
             const sourceValues = Array.from(sourceElements).map(option => option.value);
             const sourceString = sourceValues.length > 0 ? sourceValues.join(',') : null;
 
             // 动态拼接所有API的请求参数
-            const commonParams = {startDate, endDate, sourceList: sourceString};
+            const commonParams = {startDate, endDate, filterSourceList: sourceString};
             const requestUrls = [
                 buildUrlWithParams(API_CONFIG.dashboard, commonParams),
                 buildUrlWithParams(API_CONFIG.categories, commonParams),
@@ -712,6 +712,14 @@
         document.body.prepend(loading);
 
         try {
+            // 确保tags-container为空
+            const tagsContainer = document.querySelector('.tags-container');
+            tagsContainer.innerHTML = '';
+
+            // 确保placeholder显示
+            const searchInput = document.getElementById('searchInput');
+            searchInput.placeholder = '过滤来源';
+
             const data = await fetchData();
             appData = data;
 
