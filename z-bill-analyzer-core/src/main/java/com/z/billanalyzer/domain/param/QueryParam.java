@@ -51,7 +51,7 @@ public class QueryParam {
     private List<Integer> filterSourceList;
 
     /**
-     * 过滤合并类型列表
+     * 过滤重复项类型列表
      */
-    private List<Integer> filterMergeType;
+    private List<Integer> duplicateTypeList;
 }

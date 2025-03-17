@@ -405,6 +405,14 @@
             background: #ffcdd2; /* 更深的红色背景 */
         }
 
+        /* 确保新增的多选框样式与现有的一致 */
+        .custom-multiselect {
+            position: relative;
+            width: 260px;
+            font-family: Arial, sans-serif;
+            margin-right: 10px; /* 确保与右边的按钮有间距 */
+        }
+
     </style>
 </head>
 <body>
@@ -442,6 +450,29 @@
                 <option value="0">微信</option>
                 <option value="1">支付宝</option>
                 <option value="2">招商银行</option>
+            </select>
+        </div>
+
+        <!-- 在过滤来源多选框后面添加以下代码 -->
+        <div class="custom-multiselect">
+            <div class="selected-tags" onclick="toggleDuplicateDropdown()">
+                <div class="tags-container">
+                    <!-- 已选标签动态插入到这里 -->
+                </div>
+                <input type="text"
+                       class="search-input"
+                       placeholder="过滤重复项"
+                       id="duplicateSearchInput" oninput="filterDuplicateOptions(this.value)">
+            </div>
+            <div class="dropdown-options">
+                <ul>
+                    <li onclick="toggleDuplicateOption('0', this)">相同来源</li>
+                    <li onclick="toggleDuplicateOption('1', this)">银行</li>
+                </ul>
+            </div>
+            <select id="duplicateTypeList" name="duplicateTypeList" multiple hidden>
+                <option value="0">相同来源</option>
+                <option value="1">银行</option>
             </select>
         </div>
 
@@ -673,8 +704,18 @@
             const sourceValues = Array.from(sourceElements).map(option => option.value);
             const sourceString = sourceValues.length > 0 ? sourceValues.join(',') : null;
 
+            // 获取过滤重复项多选值并转换为逗号分隔字符串
+            const duplicateElements = document.getElementById('duplicateTypeList').selectedOptions;
+            const duplicateValues = Array.from(duplicateElements).map(option => option.value);
+            const duplicateString = duplicateValues.length > 0 ? duplicateValues.join(',') : null;
+
             // 动态拼接所有API的请求参数
-            const commonParams = {startDate, endDate, filterSourceList: sourceString};
+            const commonParams = {
+                startDate,
+                endDate,
+                filterSourceList: sourceString,
+                duplicateTypeList: duplicateString
+            };
             const requestUrls = [
                 buildUrlWithParams(API_CONFIG.dashboard, commonParams),
                 buildUrlWithParams(API_CONFIG.categories, commonParams),
@@ -777,6 +818,7 @@
     function refreshData() {
         // 保存当前选中的选项
         const selectedSourceValues = Array.from(document.getElementById('filterSourceList').selectedOptions).map(option => option.value);
+        const selectedDuplicateValues = Array.from(document.getElementById('duplicateTypeList').selectedOptions).map(option => option.value);
 
         initPage().then(() => {
             // 数据加载完成后，重新应用选中的选项
@@ -788,6 +830,15 @@
                 }
             });
             updateSelectedTags(); // 更新显示的标签
+
+            selectedDuplicateValues.forEach(value => {
+                const option = document.querySelector(`#duplicateTypeList option[value="${value}"]`);
+                if (option) {
+                    option.selected = true;
+                    selectedDuplicateOptions.add(value);
+                }
+            });
+            updateSelectedDuplicateTags(); // 更新显示的标签
         });
     }
 
@@ -999,6 +1050,73 @@
         }
         refreshData();
     }
+
+    // 新增：处理过滤重复项多选框的逻辑
+    let selectedDuplicateOptions = new Set();
+
+    function toggleDuplicateDropdown() {
+        const options = document.querySelectorAll('.dropdown-options')[1];
+        options.style.display = options.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function toggleDuplicateOption(value, element) {
+        const option = document.querySelector(`#duplicateTypeList option[value="${value}"]`);
+
+        if (selectedDuplicateOptions.has(value)) {
+            selectedDuplicateOptions.delete(value);
+            option.selected = false;
+            element.classList.remove('selected');
+        } else {
+            selectedDuplicateOptions.add(value);
+            option.selected = true;
+            element.classList.add('selected');
+        }
+
+        updateSelectedDuplicateTags();
+
+        // 新增：当有选择时隐藏placeholder
+        const searchInput = document.getElementById('duplicateSearchInput');
+        searchInput.placeholder = selectedDuplicateOptions.size > 0 ? '' : '过滤重复项';
+    }
+
+    function updateSelectedDuplicateTags() {
+        const container = document.querySelectorAll('.tags-container')[1];
+        container.innerHTML = '';
+
+        selectedDuplicateOptions.forEach(value => {
+            const text = document.querySelector(`#duplicateTypeList option[value="${value}"]`).textContent;
+            const tag = document.createElement('div');
+            tag.className = 'tag';
+            tag.innerHTML = `
+            ${text}
+            <span class="remove-tag" onclick="removeDuplicateTag('${value}')">×</span>
+        `;
+            container.appendChild(tag);
+        });
+    }
+
+    function removeDuplicateTag(value) {
+        const option = document.querySelector(`#duplicateTypeList option[value="${value}"]`);
+        selectedDuplicateOptions.delete(value);
+        option.selected = false;
+        document.querySelector(`.dropdown-options li[onclick*="${value}"]`).classList.remove('selected');
+        updateSelectedDuplicateTags();
+
+        // 新增：当没有选择时恢复placeholder
+        const searchInput = document.getElementById('duplicateSearchInput');
+        searchInput.placeholder = selectedDuplicateOptions.size > 0 ? '' : '过滤重复项';
+    }
+
+    function filterDuplicateOptions(keyword) {
+        const items = document.querySelectorAll('.dropdown-options li');
+        keyword = keyword.toLowerCase();
+
+        items.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            item.style.display = text.includes(keyword) ? 'block' : 'none';
+        });
+    }
+
 
     // 启动应用
     initPage();

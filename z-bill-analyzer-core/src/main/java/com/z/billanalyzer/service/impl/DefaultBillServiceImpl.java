@@ -1,6 +1,5 @@
 package com.z.billanalyzer.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
 import com.z.billanalyzer.domain.PageResult;
 import com.z.billanalyzer.domain.bill.BaseBill;
 import com.z.billanalyzer.domain.bill.BaseBillDetail;
@@ -54,8 +53,8 @@ public class DefaultBillServiceImpl implements IBillService {
         if (param.getFilterSourceList() != null && !param.getFilterSourceList().isEmpty()) {
             stream = stream.filter(bill -> !param.getFilterSourceList().contains(bill.getSource()));
         }
-        if (param.getFilterMergeType() != null && !param.getFilterMergeType().isEmpty()) {
-            stream = stream.filter(bill -> !bill.isMerge() || (bill.getMergeType() != null && !param.getFilterMergeType().contains(bill.getMergeType())));
+        if (param.getDuplicateTypeList() != null && !param.getDuplicateTypeList().isEmpty()) {
+            stream = stream.filter(bill -> !bill.isMerge() || (bill.getMergeType() != null && !param.getDuplicateTypeList().contains(bill.getMergeType())));
         }
         if (param.getAmountType() != null) {
             stream = stream.filter(bill -> bill.getAmountType().equals(param.getAmountType()));
