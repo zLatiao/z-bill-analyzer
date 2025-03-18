@@ -4,11 +4,20 @@ import com.z.billanalyzer.domain.PageResult;
 import com.z.billanalyzer.domain.bill.BaseBill;
 import com.z.billanalyzer.domain.bill.BaseBillDetail;
 import com.z.billanalyzer.domain.param.QueryParam;
+import com.z.billanalyzer.domain.parse.BillExcelParseParam;
 import com.z.billanalyzer.domain.vo.*;
 
 import java.util.List;
 
 public interface IBillService {
+
+    /**
+     * 解析
+     *
+     * @param params
+     * @return ParseResultVO
+     */
+    ParseResultVO parse(List<BillExcelParseParam> params);
 
     /**
      * 根据ID获取Bill列表

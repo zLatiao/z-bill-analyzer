@@ -1,10 +1,12 @@
 package com.z.billanalyzer.service.impl;
 
+import com.z.billanalyzer.ParserCore;
 import com.z.billanalyzer.domain.PageResult;
 import com.z.billanalyzer.domain.bill.BaseBill;
 import com.z.billanalyzer.domain.bill.BaseBillDetail;
 import com.z.billanalyzer.domain.bill.BillAll;
 import com.z.billanalyzer.domain.param.QueryParam;
+import com.z.billanalyzer.domain.parse.BillExcelParseParam;
 import com.z.billanalyzer.domain.vo.*;
 import com.z.billanalyzer.enums.AmountTypeEnum;
 import com.z.billanalyzer.enums.BillSourceEnum;
@@ -32,6 +34,12 @@ public class DefaultBillServiceImpl implements IBillService {
 
     private BillAll getBill(Integer id) {
         return BILL_MAP.get(id);
+    }
+
+    @Override
+    public ParseResultVO parse(List<BillExcelParseParam> params) {
+        List<BaseBill<?>> billInfos = ParserCore.parse(params);
+        return new ParseResultVO(saveBill(billInfos));
     }
 
     @Override

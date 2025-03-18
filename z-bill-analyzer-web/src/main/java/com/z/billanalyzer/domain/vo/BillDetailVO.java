@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BillDetailVO {
+
     /**
      * 金额
      */
@@ -44,6 +45,41 @@ public class BillDetailVO {
     private String counterparty;
 
     /**
+     * 商品
+     */
+    private String product;
+
+    /**
+     * 支付方式
+     */
+    private String paymentMode;
+
+    /**
+     * 交易状态
+     */
+    private String transactionStatus;
+
+    /**
+     * 账单单号
+     */
+    private String transactionNo;
+
+    /**
+     * 商家单号
+     */
+    private String merchantNo;
+
+    /**
+     * 备注
+     */
+    private String remark;
+
+    /**
+     * 招商银行还有这个余额
+     */
+    private BigDecimal balance;
+
+    /**
      * 金额类型
      */
     private String amountTypeStr;
@@ -52,9 +88,4 @@ public class BillDetailVO {
      * 账单来源
      */
     private String sourceStr;
-
-    /**
-     * 备注
-     */
-    private String remark;
 }

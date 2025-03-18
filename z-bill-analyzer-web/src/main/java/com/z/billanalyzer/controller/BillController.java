@@ -42,9 +42,7 @@ public class BillController {
             }
         }).toList();
 
-        List<BaseBill<?>> billInfos = ParserCore.parse(params);
-
-        return Result.success(new ParseResultVO(billService.saveBill(billInfos)));
+        return Result.success(billService.parse(params));
     }
 
     @GetMapping("/getImportBillInfo")

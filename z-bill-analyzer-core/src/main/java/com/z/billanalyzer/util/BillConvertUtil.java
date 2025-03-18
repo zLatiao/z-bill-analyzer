@@ -17,8 +17,8 @@ import java.util.List;
 public class BillConvertUtil {
 
     // todo 解析的时候就把银行卡号解析出来
-    public static WxBillDetail convert(WxBillExcelParseResult billDTO) {
-        String billAmount = billDTO.getAmount();
+    public static WxBillDetail convert(WxBillExcelParseResult parseResult) {
+        String billAmount = parseResult.getAmount();
         String amountStr;
         if (billAmount.contains("¥")) {
             amountStr = billAmount.substring(billAmount.indexOf('¥') + 1).replace(",", "");
@@ -28,17 +28,17 @@ public class BillConvertUtil {
 
         WxBillDetail billDetail = new WxBillDetail();
         billDetail.setAmount(new BigDecimal(amountStr));
-        billDetail.setAmountType(AmountTypeEnum.getEnum(billDTO.getIncomeOrExpense()).getType());
-        billDetail.setTransactionType(billDTO.getTransactionType() == null ? "无" : billDTO.getTransactionType());
+        billDetail.setAmountType(AmountTypeEnum.getEnum(parseResult.getIncomeOrExpense()).getType());
+        billDetail.setTransactionType(parseResult.getTransactionType() == null ? "无" : parseResult.getTransactionType());
         billDetail.setSource(BillSourceEnum.WX.ordinal());
-        billDetail.setTransactionTime(billDTO.getTransactionTime());
-        billDetail.setCounterparty(billDTO.getCounterparty());
-        billDetail.setProduct(billDTO.getProduct());
-        billDetail.setPaymentMethod(billDTO.getPaymentMethod());
-        billDetail.setTransactionStatus(billDTO.getCurrentStatus());
-        billDetail.setTransactionNo(billDTO.getTransactionNo());
-        billDetail.setMerchantNo(billDTO.getMerchantNo());
-        billDetail.setRemark(billDTO.getRemark());
+        billDetail.setTransactionTime(parseResult.getTransactionTime());
+        billDetail.setCounterparty(parseResult.getCounterparty());
+        billDetail.setProduct(parseResult.getProduct());
+        billDetail.setPaymentMethod(parseResult.getPaymentMethod());
+        billDetail.setTransactionStatus(parseResult.getCurrentStatus());
+        billDetail.setTransactionNo(parseResult.getTransactionNo());
+        billDetail.setMerchantNo(parseResult.getMerchantNo());
+        billDetail.setRemark(parseResult.getRemark());
         return billDetail;
     }
 
@@ -47,20 +47,20 @@ public class BillConvertUtil {
     }
 
 
-    public static AlipayBillDetail convert(AlipayBillExcelParseResult billDTO) {
+    public static AlipayBillDetail convert(AlipayBillExcelParseResult parseResult) {
         AlipayBillDetail billDetail = new AlipayBillDetail();
-        billDetail.setAmount(billDTO.getAmount());
-        billDetail.setAmountType(AmountTypeEnum.getEnum(billDTO.getIncomeOrExpense()).getType());
-        billDetail.setTransactionType(billDTO.getTransactionCategory());
+        billDetail.setAmount(parseResult.getAmount());
+        billDetail.setAmountType(AmountTypeEnum.getEnum(parseResult.getIncomeOrExpense()).getType());
+        billDetail.setTransactionType(parseResult.getTransactionCategory());
         billDetail.setSource(BillSourceEnum.ALIPAY.ordinal());
-        billDetail.setTransactionTime(billDTO.getTransactionTime());
-        billDetail.setCounterparty(billDTO.getCounterparty());
-        billDetail.setProduct(billDTO.getProduct());
-        billDetail.setPaymentMethod(billDTO.getPaymentMethod());
-        billDetail.setTransactionStatus(billDTO.getTransactionStatus());
-        billDetail.setTransactionNo(billDTO.getTransactionOrderId());
-        billDetail.setMerchantNo(billDTO.getMerchantOrderId());
-        billDetail.setRemark(billDTO.getRemark());
+        billDetail.setTransactionTime(parseResult.getTransactionTime());
+        billDetail.setCounterparty(parseResult.getCounterparty());
+        billDetail.setProduct(parseResult.getProduct());
+        billDetail.setPaymentMethod(parseResult.getPaymentMethod());
+        billDetail.setTransactionStatus(parseResult.getTransactionStatus());
+        billDetail.setTransactionNo(parseResult.getTransactionOrderId());
+        billDetail.setMerchantNo(parseResult.getMerchantOrderId());
+        billDetail.setRemark(parseResult.getRemark());
         return billDetail;
     }
 
@@ -75,24 +75,25 @@ public class BillConvertUtil {
      * 3级	平台-场景-商户	美团-美团外卖App袁记云饺
      * 4级	平台-支付方式-场景-商户	财付通-微信支付-停车场-捷顺
      *
-     * @param billDTO
+     * @param parseResult
      * @return
      */
-    public static CmbBillDetail convert(CmbBillExcelParseResult billDTO) {
+    public static CmbBillDetail convert(CmbBillExcelParseResult parseResult) {
         CmbBillDetail billDetail = new CmbBillDetail();
-        if (billDTO.getIncome() != null) {
-            billDetail.setAmount(billDTO.getIncome());
+        if (parseResult.getIncome() != null) {
+            billDetail.setAmount(parseResult.getIncome());
             billDetail.setAmountType(AmountTypeEnum.INCOME.getType());
         } else {
-            billDetail.setAmount(billDTO.getExpense());
+            billDetail.setAmount(parseResult.getExpense());
             billDetail.setAmountType(AmountTypeEnum.EXPENSE.getType());
         }
-        billDetail.setTransactionType(billDTO.getTransactionType());
+        billDetail.setBalance(parseResult.getBalance());
+        billDetail.setTransactionType(parseResult.getTransactionType());
         billDetail.setSource(BillSourceEnum.CMB.ordinal());
-        billDetail.setTransactionTime(LocalDateTime.parse((billDTO.getDate() + " " + billDTO.getTime()).replace("\t", ""), DateTimeFormatter.ofPattern("yyyyMMdd HH:mm:ss")));
-        billDetail.setRemark(billDTO.getRemark());
-        if (billDTO.getRemark() != null && !billDTO.getRemark().isBlank()) {
-            String[] remarkArr = billDTO.getRemark().split("-");
+        billDetail.setTransactionTime(LocalDateTime.parse((parseResult.getDate() + " " + parseResult.getTime()).replace("\t", ""), DateTimeFormatter.ofPattern("yyyyMMdd HH:mm:ss")));
+        billDetail.setRemark(parseResult.getRemark());
+        if (parseResult.getRemark() != null && !parseResult.getRemark().isBlank()) {
+            String[] remarkArr = parseResult.getRemark().split("-");
             // 从备注里解析出交易对方
             billDetail.setCounterparty(remarkArr[remarkArr.length - 1]);
         }

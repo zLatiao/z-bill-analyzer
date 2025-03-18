@@ -4,6 +4,7 @@ import com.z.billanalyzer.domain.PageResult;
 import com.z.billanalyzer.domain.bill.BaseBill;
 import com.z.billanalyzer.domain.bill.BaseBillDetail;
 import com.z.billanalyzer.domain.param.QueryParam;
+import com.z.billanalyzer.domain.parse.BillExcelParseParam;
 import com.z.billanalyzer.domain.vo.*;
 import com.z.billanalyzer.service.IBillService;
 
@@ -20,6 +21,11 @@ import java.util.List;
  * 模拟数据实现类
  */
 public class MockBillServiceImpl implements IBillService {
+    @Override
+    public ParseResultVO parse(List<BillExcelParseParam> params) {
+        return null;
+    }
+
     @Override
     public List<? extends BaseBillDetail> getBills(Integer id) {
         return Collections.emptyList();
