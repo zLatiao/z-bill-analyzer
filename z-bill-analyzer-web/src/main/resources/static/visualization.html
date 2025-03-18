@@ -934,7 +934,7 @@
                     remark: t.remark,
                     // 补充新增字段
                     product: t.product,
-                    paymentMode: t.paymentMode,
+                    paymentMethod: t.paymentMethod,
                     transactionStatus: t.transactionStatus,
                     transactionNo: t.transactionNo,
                     merchantNo: t.merchantNo,
@@ -1162,7 +1162,7 @@
         tbody.innerHTML = data.map((item, index) => `    <tr>        <td>${item.transactionTime}</td>
         <td>${item.transactionType}</td>
         <td>${item.counterparty}</td>
-        <td>${item.amount.toFixed(2)}</td>
+        <td>¥${item.amount.toFixed(2)}</td>
         <td>${item.amountTypeStr}</td>
         <td>${item.sourceStr}</td>
         <td>${item.remark || ''}</td>
@@ -1235,17 +1235,6 @@
         pagination.pageSize = parseInt(size);
         pagination.currentPage = 1;
         refreshData();
-    }
-
-    // 排序功能
-    let sortDirection = 1;
-
-    function sortTable(field) {
-        appData.transactions.sort((a, b) =>
-            (a[field] > b[field] ? 1 : -1) * sortDirection
-        );
-        sortDirection *= -1;
-        renderTable(appData.transactions);
     }
 
     function sortTable(field) {
@@ -1342,19 +1331,23 @@
             <span class="modal-value">${item.merchantNo || ''}</span>
         </div>
         <div class="modal-item">
-            <span class="modal-label">交易时间:</span>
+            <span class="modal-label">时间:</span>
             <span class="modal-value">${item.transactionTime}</span>
         </div>
         <div class="modal-item">
             <span class="modal-label">金额:</span>
-            <span class="modal-value">¥${item.amount || ''}</span>
+            <span class="modal-value">¥${item.amount}</span>
         </div>
         <div class="modal-item">
             <span class="modal-label">收/支:</span>
-            <span class="modal-value">${item.amountTypeStr}</span>
+            <span class="modal-value">${item.amountTypeStr || ''}</span>
         </div>
         <div class="modal-item">
-            <span class="modal-label">交易类型:</span>
+            <span class="modal-label">支付方式:</span>
+            <span class="modal-value">${item.paymentMethod || ''}</span>
+        </div>
+        <div class="modal-item">
+            <span class="modal-label">分类:</span>
             <span class="modal-value">${item.transactionType}</span>
         </div>
         <div class="modal-item">
@@ -1368,10 +1361,6 @@
         <div class="modal-item">
             <span class="modal-label">商品名称:</span>
             <span class="modal-value">${item.product || '无'}</span>
-        </div>
-        <div class="modal-item">
-            <span class="modal-label">支付方式:</span>
-            <span class="modal-value">${item.paymentMethod || '无'}</span>
         </div>
         <div class="modal-item">
             <span class="modal-label">交易状态:</span>
