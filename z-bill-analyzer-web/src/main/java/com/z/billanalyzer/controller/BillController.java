@@ -1,20 +1,17 @@
 package com.z.billanalyzer.controller;
 
-import cn.hutool.core.bean.BeanUtil;
-import com.z.billanalyzer.ParserCore;
 import com.z.billanalyzer.domain.PageResult;
-import com.z.billanalyzer.domain.bill.BaseBill;
 import com.z.billanalyzer.domain.bill.BaseBillDetail;
-import com.z.billanalyzer.domain.parse.BillExcelParseParam;
 import com.z.billanalyzer.domain.param.QueryParam;
+import com.z.billanalyzer.domain.parse.BillExcelParseParam;
 import com.z.billanalyzer.domain.vo.*;
 import com.z.billanalyzer.domain.vo.echarts.PieDataVO;
-import com.z.billanalyzer.domain.vo.TrendVO;
 import com.z.billanalyzer.enums.AmountTypeEnum;
 import com.z.billanalyzer.enums.BillSourceEnum;
 import com.z.billanalyzer.parser.FileNameParser;
 import com.z.billanalyzer.service.IBillService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -92,7 +89,8 @@ public class BillController {
     }
 
     private BillDetailVO convertToVo(BaseBillDetail billDetail) {
-        BillDetailVO billVO = BeanUtil.copyProperties(billDetail, BillDetailVO.class);
+        BillDetailVO billVO = new BillDetailVO();
+        BeanUtils.copyProperties(billDetail, billVO);
         billVO.setAmountTypeStr(AmountTypeEnum.getEnum(billVO.getAmountType()).getDesc());
         billVO.setSourceStr(BillSourceEnum.getNameBy(billVO.getSource()));
         return billVO;
