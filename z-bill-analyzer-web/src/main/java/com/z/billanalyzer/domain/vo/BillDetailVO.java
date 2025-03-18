@@ -52,7 +52,7 @@ public class BillDetailVO {
     /**
      * 支付方式
      */
-    private String paymentMode;
+    private String paymentMethod;
 
     /**
      * 交易状态
