@@ -1001,7 +1001,7 @@
             <td>${item.amount.toFixed(2)}</td>
             <td>${item.amountTypeStr}</td>
             <td>${item.sourceStr}</td>
-            <td>${item.remark}</td>
+            <td>${item.remark || ''}</td>
         </tr>
     `).join('');
     }
