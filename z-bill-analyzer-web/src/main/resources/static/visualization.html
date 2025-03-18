@@ -422,6 +422,48 @@
             display: block; /* 通过添加show类显示 */
         }
 
+        #transactionTable {
+            table-layout: fixed; /* 新增固定列宽算法 */
+            width: 100%; /* 保持原有宽度 */
+        }
+
+        #transactionTable th,
+        #transactionTable td {
+            width: 14.28%; /* 7列平均分配 100%/7≈14.28% */
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+            white-space: nowrap; /* 防止换行 */
+            overflow: hidden; /* 隐藏溢出内容 */
+            text-overflow: ellipsis; /* 显示省略号 */
+        }
+
+        /* 自定义列宽（可选） */
+        #transactionTable th:nth-child(1), /* 时间列 */
+        #transactionTable td:nth-child(1) {
+            width: 15%;
+        }
+
+        #transactionTable th:nth-child(2), /* 分类列 */
+        #transactionTable td:nth-child(2) {
+            width: 12%;
+        }
+
+        #transactionTable th:nth-child(4), /* 金额列 */
+        #transactionTable td:nth-child(4) {
+            width: 10%;
+        }
+
+        #transactionTable th:nth-child(5), /* 收/支列 */
+        #transactionTable td:nth-child(5) {
+            width: 5%;
+        }
+
+        #transactionTable th:nth-child(7), /* 备注列 */
+        #transactionTable td:nth-child(7) {
+            width: 25%;
+            white-space: normal; /* 允许备注换行 */
+        }
     </style>
 </head>
 <body>
