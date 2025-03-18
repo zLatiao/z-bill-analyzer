@@ -464,6 +464,26 @@
             width: 25%;
             white-space: normal; /* 允许备注换行 */
         }
+
+        /* 在现有样式中添加 */
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            max-width: 300px;
+            z-index: 9999;
+            pointer-events: none;
+            display: none;
+        }
+
+        /* 修改表格单元格样式 */
+        #transactionTable td {
+            position: relative; /* 为tooltip定位提供基准 */
+        }
+
     </style>
 </head>
 <body>
@@ -1035,17 +1055,41 @@
     // 表格功能
     function renderTable(data) {
         const tbody = document.getElementById('transactionBody');
-        tbody.innerHTML = data.map(item => `
-        <tr>
-            <td>${item.transactionTime}</td>
-            <td>${item.transactionType}</td>
-            <td>${item.counterparty}</td>
-            <td>${item.amount.toFixed(2)}</td>
-            <td>${item.amountTypeStr}</td>
-            <td>${item.sourceStr}</td>
-            <td>${item.remark || ''}</td>
-        </tr>
+        tbody.innerHTML = data.map(item => `    <tr>
+        <td>${item.transactionTime}</td>
+        <td>${item.transactionType}</td>
+        <td>${item.counterparty}</td>
+        <td>${item.amount.toFixed(2)}</td>
+        <td>${item.amountTypeStr}</td>
+        <td>${item.sourceStr}</td>
+        <td>${item.remark || ''}</td>
+    </tr>
     `).join('');
+
+        // 新增tooltip逻辑
+        const cells = document.querySelectorAll('#transactionTable td');
+        const tooltip = document.createElement('div');
+        tooltip.className = 'tooltip';
+        document.body.appendChild(tooltip);
+
+        cells.forEach(cell => {
+            cell.addEventListener('mouseenter', function(e) {
+                // 仅当内容被截断时显示tooltip
+                if (this.offsetWidth < this.scrollWidth) {
+                    tooltip.style.display = 'block';
+                    tooltip.textContent = this.textContent;
+
+                    // 定位逻辑
+                    const rect = this.getBoundingClientRect();
+                    tooltip.style.left = `${rect.left + window.scrollX}px`;
+                    tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`;
+                }
+            });
+
+            cell.addEventListener('mouseleave', () => {
+                tooltip.style.display = 'none';
+            });
+        });
     }
 
     function updatePaginationInfo() {
