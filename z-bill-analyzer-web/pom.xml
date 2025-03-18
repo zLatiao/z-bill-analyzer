@@ -5,12 +5,12 @@
 
     <parent>
         <groupId>com.z.billanalyzer</groupId>
-        <artifactId>z-billDetail-analyzer</artifactId>
+        <artifactId>z-bill-analyzer</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 
     <groupId>com.zzz.acount</groupId>
-    <artifactId>z-billDetail-analyzer-web</artifactId>
+    <artifactId>z-bill-analyzer-web</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>z-account-web</name>
     <description>z-account-web</description>
@@ -45,7 +45,7 @@
 
         <dependency>
             <groupId>com.z.billanalyzer</groupId>
-            <artifactId>z-billDetail-analyzer-core</artifactId>
+            <artifactId>z-bill-analyzer-core</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
 
