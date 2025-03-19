@@ -11,6 +11,12 @@
             --error-color: #F56C6C;
         }
 
+        :root {
+            --primary-color: #409EFF;
+            --success-color: #67C23A;
+            --error-color: #F56C6C;
+        }
+
         body {
             font-family: 'Segoe UI', system-ui;
             background: #f5f7fa;
@@ -22,12 +28,83 @@
         }
 
         .upload-container {
+            position: relative;
             background: white;
             padding: 2rem 3rem;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             width: 600px;
             transition: all 0.3s;
+        }
+
+        .import-record {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1;
+        }
+
+        .icon-container {
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #f0f0f0;
+            transition: background 0.2s;
+        }
+
+        .icon-container:hover {
+            background: #e0e0e0;
+        }
+
+        .icon-clock {
+            font-size: 18px;
+        }
+
+        .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--error-color);
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 12px;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        .import-records-popup {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 40px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .records-list {
+            padding: 8px;
+        }
+
+        .record-item {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .record-item:hover {
+            background-color: #f8f8f8;
         }
 
         .drop-zone {
@@ -108,6 +185,17 @@
 </head>
 <body>
 <div class="upload-container">
+    <!-- 导入记录图标 -->
+    <div class="import-record">
+        <div class="icon-container" onclick="toggleImportRecords(event)">
+            <span class="icon-clock">🕒</span>
+            <span class="badge" id="importRecordCount">0</span>
+        </div>
+        <div class="import-records-popup" id="importRecordsPopup">
+            <div class="records-list" id="recordsList"></div>
+        </div>
+    </div>
+
     <h2>批量文件上传分析</h2>
     <p>支持CSV格式</p>
 
@@ -132,16 +220,66 @@
     document.addEventListener('DOMContentLoaded', function() {
         fetch('/api/bill/getImportRecords')
             .then(response => {
-                if (!response.ok) throw new Error('获取导入文件的记录失败');
+                if (!response.ok) throw new Error('获取导入记录失败');
                 return response.json();
             })
             .then(data => {
-                console.log('导入文件的记录:', data);
-                // 可根据需要处理返回的会话数据
+                window.importRecords = data.data;
+                document.getElementById('importRecordCount').textContent = data.data.length;
             })
             .catch(error => {
                 console.error('请求失败:', error);
             });
+    });
+
+    // 切换导入记录弹窗
+    function toggleImportRecords(event) {
+        event.stopPropagation();
+        const popup = document.getElementById('importRecordsPopup');
+        popup.style.display = popup.style.display === 'block' ? 'none' : 'block';
+        if (popup.style.display === 'block') renderImportRecords();
+    }
+
+    // 渲染导入记录列表
+    function renderImportRecords() {
+        const recordsList = document.getElementById('recordsList');
+        recordsList.innerHTML = '';
+
+        if (!window.importRecords || window.importRecords.length === 0) {
+            recordsList.innerHTML = '<div class="record-item">暂无导入记录</div>';
+            return;
+        }
+
+        window.importRecords.forEach(record => {
+            const item = document.createElement('div');
+            item.className = 'record-item';
+            const importTime = new Date(record.importTime).toLocaleString();
+            const fileNames = Array.isArray(record.fileNames) ?
+                record.fileNames.slice(0, 2).join(', ') +
+                (record.fileNames.length > 2 ? ` 等${record.fileNames.length}个文件` : '') :
+                record.fileNames;
+
+            item.innerHTML = `
+                <div style="font-weight:500;margin-bottom:4px;">${importTime}</div>
+                <div style="font-size:0.9em;color:#666;">${fileNames}</div>
+            `;
+
+            item.addEventListener('click', () => {
+                document.cookie = `IMPORT_RECORD_ID=${record.id}; path=/; max-age=86400`;
+                window.location.href = '/visualization';
+            });
+
+            recordsList.appendChild(item);
+        });
+    }
+
+    // 点击页面其他区域关闭弹窗
+    document.addEventListener('click', function (event) {
+        const popup = document.getElementById('importRecordsPopup');
+        const iconContainer = document.querySelector('.icon-container');
+        if (!popup.contains(event.target) && !iconContainer.contains(event.target)) {
+            popup.style.display = 'none';
+        }
     });
 
     // 文件列表管理
