@@ -76,6 +76,31 @@
             border-radius: 50%;
             background: #f0f0f0;
             transition: background 0.2s;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .icon-container::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease;
+            z-index: 999;
+        }
+
+        .icon-container:hover::after {
+            opacity: 1;
+            visibility: visible;
         }
 
         .icon-container:hover {
@@ -225,7 +250,7 @@
 <div class="upload-container">
     <!-- 导入记录图标 -->
     <div class="import-record">
-        <div class="icon-container" onclick="toggleImportRecords(event)">
+        <div class="icon-container" data-tooltip="账单分析记录" onclick="toggleImportRecords(event)">
             <span class="icon-clock">🕒</span>
             <span class="badge" id="importRecordCount">0</span>
         </div>
