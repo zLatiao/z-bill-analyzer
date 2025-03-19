@@ -80,6 +80,16 @@
             cursor: pointer;
         }
 
+        .icon-container::before {
+            content: "";
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            border: 5px solid transparent;
+            border-top-color: rgba(0, 0, 0, 0.8);
+            transform: translateX(-50%);
+        }
+
         .icon-container::after {
             content: attr(data-tooltip);
             position: absolute;
@@ -96,6 +106,7 @@
             visibility: hidden;
             transition: opacity 0.2s ease;
             z-index: 999;
+            transition-delay: 0.3s;
         }
 
         .icon-container:hover::after {
