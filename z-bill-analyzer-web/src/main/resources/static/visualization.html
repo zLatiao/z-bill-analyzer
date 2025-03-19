@@ -657,6 +657,9 @@
         <h3>累计支出</h3>
         <div class="value-group"> <!-- 新增包裹容器 -->
             <div class="value expense" id="expense">0.00</div>
+        </div>
+        <h3>累计支出数</h3>
+        <div class="value-group">
             <div class="value expense" id="expenseCnt">0.00</div>
         </div>
     </div>
@@ -1100,7 +1103,7 @@
         const lineChart = echarts.init(document.getElementById('lineChart'));
         lineChart.setOption({
             title: {
-                text: '多年度收支趋势',
+                text: '收支趋势',
                 subtext: '支持左右滑动查看历史数据',
                 left: 'center',
                 textStyle: {fontSize: 16}
