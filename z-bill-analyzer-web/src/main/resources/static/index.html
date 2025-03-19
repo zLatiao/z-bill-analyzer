@@ -29,12 +29,33 @@
 
         .upload-container {
             position: relative;
-            background: white;
+            background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+            border: 1px solid rgba(64, 158, 255, 0.15); /* 与主色系呼应 */
             padding: 2rem 3rem;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             width: 600px;
             transition: all 0.3s;
+        }
+
+        h2 {
+            color: #2c3e50;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            position: relative;
+            padding-left: 1.5rem;
+        }
+
+        h2::before { /* 增加品牌标识线 */
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 70%;
+            background: var(--primary-color);
+            border-radius: 2px;
         }
 
         .import-record {
@@ -200,8 +221,8 @@
         </div>
     </div>
 
-    <h2>批量文件上传分析</h2>
-    <p>支持CSV格式</p>
+    <h2>批量文件导入分析</h2>
+    <p>支持CSV格式。目前支持微信、支付宝、招商银行。</p>
 
     <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
         <div>点击选择文件 或 拖放文件到此区域</div>
