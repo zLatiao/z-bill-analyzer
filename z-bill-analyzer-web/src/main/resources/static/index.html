@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>z-account账单分析</title>
+    <title>z-bill-analyzer</title>
     <style>
         :root {
             --primary-color: #409EFF;
@@ -128,6 +128,22 @@
 </div>
 
 <script>
+    // 在页面加载时获取导入文件的记录
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/api/bill/getImportRecords')
+            .then(response => {
+                if (!response.ok) throw new Error('获取导入文件的记录失败');
+                return response.json();
+            })
+            .then(data => {
+                console.log('导入文件的记录:', data);
+                // 可根据需要处理返回的会话数据
+            })
+            .catch(error => {
+                console.error('请求失败:', error);
+            });
+    });
+
     // 文件列表管理
     let files = [];
     const dropZone = document.getElementById('dropZone');
@@ -195,7 +211,7 @@
             if (resJson.code === 200 && resJson.data.id != null) {
                 const id = resJson.data.id
                 console.log("id:::::" + id)
-                document.cookie = `file_session=${id}; path=/; max-age=86400`;
+                document.cookie = `IMPORT_RECORD_ID=${id}; path=/; max-age=86400`;
                 window.location.href = '/visualization';
             }
 

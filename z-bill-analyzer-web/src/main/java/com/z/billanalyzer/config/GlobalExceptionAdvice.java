@@ -15,6 +15,6 @@ public class GlobalExceptionAdvice {
             return null;
         }
         log.error("系统异常：{}", e.getMessage(), e);
-        return Result.fail(500, "系统异常：" + e.getMessage());
+        return Result.fail(500, e.getMessage());
     }
 }

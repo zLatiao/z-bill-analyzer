@@ -10,26 +10,38 @@ import com.z.billanalyzer.enums.AmountTypeEnum;
 import com.z.billanalyzer.enums.BillSourceEnum;
 import com.z.billanalyzer.parser.FileNameParser;
 import com.z.billanalyzer.service.IBillService;
+import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/bill")
 @Slf4j
 public class BillController {
 
+
     @Autowired
     private IBillService billService;
 
+    @GetMapping("/getImportRecords")
+    public Result<List<ImportRecord>> getImportRecords(HttpSession session) {
+        return Result.success((List<ImportRecord>) session.getAttribute("IMPORT_RECORDS"));
+    }
+
     @PostMapping("/parse")
-    public Result<ParseResultVO> parse(@RequestParam("files") List<MultipartFile> files) {
+    public Result<ParseResultVO> parse(@RequestParam("files") List<MultipartFile> files, HttpSession session) {
         List<BillExcelParseParam> params = files.stream().map(file -> {
             try {
                 String filename = file.getOriginalFilename();
@@ -39,26 +51,36 @@ public class BillController {
             }
         }).toList();
 
-        return Result.success(billService.parse(params));
+        ParseResultVO parse = billService.parse(params);
+
+        // 放到session里去
+        Object importRecords = session.getAttribute("IMPORT_RECORDS");
+        if (importRecords == null) {
+            importRecords = new ArrayList<>();
+            session.setAttribute("IMPORT_RECORDS", importRecords);
+        }
+        ((List<ImportRecord>) importRecords).add(new ImportRecord(parse.id(), LocalDateTime.now(), files.stream().map(MultipartFile::getOriginalFilename).collect(Collectors.joining(";"))));
+
+        return Result.success(parse);
     }
 
     @GetMapping("/getImportBillInfo")
-    public Result<ImportBillInfoVO> getImportBillInfo(@CookieValue(value = "file_session") Integer id) {
-        log.info("接收请求，id: {}", id);
-        return Result.success(billService.getImportBillInfo(id));
+    public Result<ImportBillInfoVO> getImportBillInfo(@CookieValue(value = "IMPORT_RECORD_ID", required = false) Integer importRecordId) {
+        verifyPermission(importRecordId);
+        return Result.success(billService.getImportBillInfo(importRecordId));
     }
 
     @GetMapping("/dashboard")
-    public Result<StatisticVO> getStatisticData(@CookieValue(value = "file_session") Integer id, QueryParam param) {
-        log.info("接收请求，id: {}", id);
-        param.setId(id);
+    public Result<StatisticVO> getStatisticData(@CookieValue(value = "IMPORT_RECORD_ID", required = false) Integer importRecordId, QueryParam param) {
+        verifyPermission(importRecordId);
+        param.setId(importRecordId);
         return Result.success(billService.getStatisticData(param));
     }
 
     @GetMapping("/categories")
-    public Result<List<PieDataVO>> getExpenseCategories(@CookieValue(value = "file_session") Integer id, QueryParam param) {
-        log.info("接收请求，id: {}", id);
-        param.setId(id);
+    public Result<List<PieDataVO>> getExpenseCategories(@CookieValue(value = "IMPORT_RECORD_ID", required = false) Integer importRecordId, QueryParam param) {
+        verifyPermission(importRecordId);
+        param.setId(importRecordId);
         return Result.success(billService.getExpenseCategoryData(param).stream().map(BillController::convertToPieData).toList());
     }
 
@@ -68,17 +90,16 @@ public class BillController {
     }
 
     @GetMapping("/trends")
-    public Result<TrendVO> getFinancialTrends(
-            @CookieValue(value = "file_session") Integer id, QueryParam param) {
-        log.info("接收请求，id: {}", id);
-        param.setId(id);
-
+    public Result<TrendVO> getFinancialTrends(@CookieValue(value = "IMPORT_RECORD_ID", required = false) Integer importRecordId, QueryParam param) {
+        verifyPermission(importRecordId);
+        param.setId(importRecordId);
         return Result.success(billService.getTrendsData(param));
     }
 
     @GetMapping("/page")
-    public Result<PageResult<BillDetailVO>> page(@CookieValue(value = "file_session") Integer id, QueryParam param) {
-        param.setId(id);
+    public Result<PageResult<BillDetailVO>> page(@CookieValue(value = "IMPORT_RECORD_ID", required = false) Integer importRecordId, QueryParam param) {
+        verifyPermission(importRecordId);
+        param.setId(importRecordId);
         PageResult<? extends BaseBillDetail> page = billService.getPage(param);
         List<? extends BaseBillDetail> list = page.getList();
         if (list == null) {
@@ -99,18 +120,43 @@ public class BillController {
     /**
      * 支出来源饼图
      *
-     * @param id
+     * @param importRecordId
      * @param param
      * @return
      */
     @GetMapping("/sources")
-    public Result<List<PieDataVO>> getExpenseSources(@CookieValue(value = "file_session") Integer id, QueryParam param) {
-        param.setId(id);
+    public Result<List<PieDataVO>> getExpenseSources(@CookieValue(value = "IMPORT_RECORD_ID", required = false) Integer importRecordId, QueryParam param) {
+        verifyPermission(importRecordId);
+        param.setId(importRecordId);
         param.setAmountType(AmountTypeEnum.EXPENSE.getType());
         return Result.success(billService.getExpenseSources(param).stream().map(BillController::convertToPieData).toList());
     }
 
     private static PieDataVO convertToPieData(ExpenseSourceVO x) {
         return new PieDataVO(x.name(), x.value());
+    }
+
+    /**
+     * 校验权限
+     *
+     * @param importRecordId
+     */
+    public void verifyPermission(Integer importRecordId) {
+        if (importRecordId == null) {
+            throw new RuntimeException("请先去导入账单文件");
+        }
+        Object obj = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest().getSession().getAttribute("IMPORT_RECORDS");
+        if (obj == null) {
+            throw new RuntimeException("请先去导入账单文件");
+        }
+        if (obj instanceof List<?> importRecords) {
+            boolean notExist = importRecords.stream()
+                    .filter(x -> x instanceof ImportRecord)
+                    .map(x -> (ImportRecord) x)
+                    .noneMatch(x -> importRecordId.equals(x.id()));
+            if (notExist) {
+                throw new RuntimeException("您没有权限访问该账单分析");
+            }
+        }
     }
 }
