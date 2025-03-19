@@ -52,6 +52,13 @@ public interface IBillService {
     Integer saveBill(List<BaseBill<?>> billInfos);
 
     /**
+     * 删除账单
+     *
+     * @param id
+     */
+    void delete(Integer id);
+
+    /**
      * 获取统计数据
      *
      * @param param

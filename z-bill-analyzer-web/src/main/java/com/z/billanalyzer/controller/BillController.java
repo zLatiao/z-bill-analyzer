@@ -2,6 +2,7 @@ package com.z.billanalyzer.controller;
 
 import com.z.billanalyzer.domain.PageResult;
 import com.z.billanalyzer.domain.bill.BaseBillDetail;
+import com.z.billanalyzer.domain.importrecord.ParseRecord;
 import com.z.billanalyzer.domain.param.QueryParam;
 import com.z.billanalyzer.domain.parse.BillExcelParseParam;
 import com.z.billanalyzer.domain.vo.*;
@@ -35,11 +36,24 @@ public class BillController {
     @Autowired
     private IBillService billService;
 
+    /**
+     * 获取导入记录
+     *
+     * @param session
+     * @return
+     */
     @GetMapping("/getImportRecords")
-    public Result<List<ImportRecord>> getImportRecords(HttpSession session) {
-        return Result.success((List<ImportRecord>) session.getAttribute("IMPORT_RECORDS"));
+    public Result<List<ParseRecord>> getImportRecords(HttpSession session) {
+        return Result.success((List<ParseRecord>) session.getAttribute("IMPORT_RECORDS"));
     }
 
+    /**
+     * 解析账单
+     *
+     * @param files
+     * @param session
+     * @return
+     */
     @PostMapping("/parse")
     public Result<ParseResultVO> parse(@RequestParam("files") List<MultipartFile> files, HttpSession session) {
         List<BillExcelParseParam> params = files.stream().map(file -> {
@@ -59,17 +73,30 @@ public class BillController {
             importRecords = new ArrayList<>();
             session.setAttribute("IMPORT_RECORDS", importRecords);
         }
-        ((List<ImportRecord>) importRecords).add(new ImportRecord(parse.id(), LocalDateTime.now(), files.stream().map(MultipartFile::getOriginalFilename).collect(Collectors.joining(";"))));
+        ((List<ParseRecord>) importRecords).add(new ParseRecord(parse.id(), LocalDateTime.now(), files.stream().map(MultipartFile::getOriginalFilename).collect(Collectors.joining(";"))));
 
         return Result.success(parse);
     }
 
+    /**
+     * 获取导入账单信息
+     *
+     * @param importRecordId
+     * @return
+     */
     @GetMapping("/getImportBillInfo")
     public Result<ImportBillInfoVO> getImportBillInfo(@CookieValue(value = "IMPORT_RECORD_ID", required = false) Integer importRecordId) {
         verifyPermission(importRecordId);
         return Result.success(billService.getImportBillInfo(importRecordId));
     }
 
+    /**
+     * 获取看板数据
+     *
+     * @param importRecordId
+     * @param param
+     * @return
+     */
     @GetMapping("/dashboard")
     public Result<StatisticVO> getStatisticData(@CookieValue(value = "IMPORT_RECORD_ID", required = false) Integer importRecordId, QueryParam param) {
         verifyPermission(importRecordId);
@@ -77,6 +104,13 @@ public class BillController {
         return Result.success(billService.getStatisticData(param));
     }
 
+    /**
+     * 获取支出分类数据
+     *
+     * @param importRecordId
+     * @param param
+     * @return
+     */
     @GetMapping("/categories")
     public Result<List<PieDataVO>> getExpenseCategories(@CookieValue(value = "IMPORT_RECORD_ID", required = false) Integer importRecordId, QueryParam param) {
         verifyPermission(importRecordId);
@@ -89,6 +123,13 @@ public class BillController {
         return new PieDataVO(x.name(), x.value());
     }
 
+    /**
+     * 获取收支趋势数据
+     *
+     * @param importRecordId
+     * @param param
+     * @return
+     */
     @GetMapping("/trends")
     public Result<TrendVO> getFinancialTrends(@CookieValue(value = "IMPORT_RECORD_ID", required = false) Integer importRecordId, QueryParam param) {
         verifyPermission(importRecordId);
@@ -96,6 +137,13 @@ public class BillController {
         return Result.success(billService.getTrendsData(param));
     }
 
+    /**
+     * 获取账单分页列表
+     *
+     * @param importRecordId
+     * @param param
+     * @return
+     */
     @GetMapping("/page")
     public Result<PageResult<BillDetailVO>> page(@CookieValue(value = "IMPORT_RECORD_ID", required = false) Integer importRecordId, QueryParam param) {
         verifyPermission(importRecordId);
@@ -155,9 +203,9 @@ public class BillController {
         }
         if (obj instanceof List<?> importRecords) {
             boolean notExist = importRecords.stream()
-                    .filter(x -> x instanceof ImportRecord)
-                    .map(x -> (ImportRecord) x)
-                    .noneMatch(x -> importRecordId.equals(x.id()));
+                    .filter(x -> x instanceof ParseRecord)
+                    .map(x -> (ParseRecord) x)
+                    .noneMatch(x -> importRecordId.equals(x.getId()));
             if (notExist) {
                 throw new RuntimeException("您没有权限访问该账单分析");
             }

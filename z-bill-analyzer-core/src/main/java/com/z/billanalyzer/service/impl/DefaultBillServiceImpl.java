@@ -131,6 +131,14 @@ public class DefaultBillServiceImpl implements IBillService {
     }
 
     @Override
+    public void delete(Integer id) {
+        if (id == null) {
+            return;
+        }
+        BILL_MAP.remove(id);
+    }
+
+    @Override
     public StatisticVO getStatisticData(QueryParam param) {
         List<? extends BaseBillDetail> incomeBillListDetail = getBillStream(param)
                 .filter(bill -> AmountTypeEnum.INCOME.getType().equals(bill.getAmountType()))

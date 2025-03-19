@@ -47,6 +47,11 @@ public class MockBillServiceImpl implements IBillService {
     }
 
     @Override
+    public void delete(Integer id) {
+
+    }
+
+    @Override
     public StatisticVO getStatisticData(QueryParam param) {
         return new StatisticVO(new BigDecimal("18500.00"), 10, new BigDecimal("12340.00"), 10, new BigDecimal("6160.00"));
     }
