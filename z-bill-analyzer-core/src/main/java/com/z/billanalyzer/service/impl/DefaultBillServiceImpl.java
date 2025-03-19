@@ -10,6 +10,7 @@ import com.z.billanalyzer.domain.parse.BillExcelParseParam;
 import com.z.billanalyzer.domain.vo.*;
 import com.z.billanalyzer.enums.AmountTypeEnum;
 import com.z.billanalyzer.enums.BillSourceEnum;
+import com.z.billanalyzer.enums.TimeUnitEnum;
 import com.z.billanalyzer.service.IBillService;
 
 import java.math.BigDecimal;
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -187,12 +189,25 @@ public class DefaultBillServiceImpl implements IBillService {
         List<BigDecimal> incomeTrend = new ArrayList<>();
         List<BigDecimal> expenseTrend = new ArrayList<>();
 
+        TimeUnitEnum timeUnitEnum = TimeUnitEnum.getBy(param.getTimeUnit());
+        // 默认月度
+        if (timeUnitEnum == null) {
+            timeUnitEnum = TimeUnitEnum.MONTH;
+        }
+
         while (!min.isAfter(max)) {
             LocalDate finalMin = min;
-            List<? extends BaseBillDetail> currBillDetails = billDetails.stream()
-                    .filter(bill -> bill.getTransactionTime().getYear() == finalMin.getYear())
-                    .filter(bill -> bill.getTransactionTime().getMonthValue() == finalMin.getMonthValue())
-                    .toList();
+
+            Predicate<BaseBillDetail> predicate = null;
+            switch (timeUnitEnum) {
+                case DAY -> predicate = bill -> bill.getTransactionTime().toLocalDate().equals(finalMin);
+                case MONTH -> predicate = bill -> bill.getTransactionTime().getYear() == finalMin.getYear() && bill.getTransactionTime().getMonthValue() == finalMin.getMonthValue();
+                case QUARTER -> {
+                }
+                case YEAR -> predicate = bill -> bill.getTransactionTime().getYear() == finalMin.getYear();
+            }
+
+            List<? extends BaseBillDetail> currBillDetails = billDetails.stream().filter(predicate).toList();
 
             BigDecimal income = currBillDetails.stream()
                     .filter(bill -> AmountTypeEnum.INCOME.getType().equals(bill.getAmountType()))
@@ -204,11 +219,25 @@ public class DefaultBillServiceImpl implements IBillService {
                     .map(BaseBillDetail::getAmount)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-            timeList.add(String.format("%d-%02d", min.getYear(), min.getMonthValue()));
+            String time = null;
+            switch (timeUnitEnum) {
+                case DAY -> time = finalMin.toString();
+                case MONTH -> time = String.format("%d-%02d", min.getYear(), min.getMonthValue());
+                case QUARTER -> {
+                }
+                case YEAR -> time = String.valueOf(finalMin.getYear());
+            }
+
+            timeList.add(time);
             incomeTrend.add(income);
             expenseTrend.add(expense);
 
-            min = min.plusMonths(1);
+            switch (timeUnitEnum) {
+                case DAY -> min = min.plusDays(1);
+                case MONTH -> min = min.plusMonths(1);
+                case QUARTER -> min = min.plusMonths(3);
+                case YEAR -> min = min.plusYears(1);
+            }
         }
 
         return new TrendVO(timeList, incomeTrend, expenseTrend);

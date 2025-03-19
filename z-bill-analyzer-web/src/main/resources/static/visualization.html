@@ -569,6 +569,26 @@
             opacity: 0.9;
         }
 
+        #timeUnit {
+            padding: 8px 12px;
+            border: 1px solid #e4e7ed;
+            border-radius: 6px;
+            background: white;
+            color: #606266;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        #timeUnit:hover {
+            border-color: #c0c4cc;
+        }
+
+        #timeUnit:focus {
+            border-color: #409EFF;
+            box-shadow: 0 0 4px rgba(64, 158, 255, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -678,10 +698,17 @@
     </div>
 </div>
 
-<div class="chart-container">  <!-- 第二行：趋势图单独成行 -->
-    <div class="chart-box" style="width:100%">
-        <div id="lineChart" class="chart"></div>
+<div class="chart-box" style="width:100%">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h3>收支趋势</h3>
+        <select id="timeUnit" class="date-range" onchange="updateTrendChart()" style="width: 120px;">
+            <option value="0">日度</option>
+            <option value="1">月度</option>
+            <option value="2">季度</option>
+            <option value="3">年度</option>
+        </select>
     </div>
+    <div id="lineChart" class="chart"></div>
 </div>
 
 <table id="transactionTable">
@@ -879,6 +906,9 @@
             const duplicateValues = Array.from(duplicateElements).map(option => option.value);
             const duplicateString = duplicateValues.length > 0 ? duplicateValues.join(',') : null;
 
+            // 折线图的参数
+            const timeUnit = document.getElementById('timeUnit').value;
+
             // 动态拼接所有API的请求参数
             const commonParams = {
                 startDate,
@@ -890,7 +920,7 @@
                 buildUrlWithParams(API_CONFIG.dashboard, commonParams),
                 buildUrlWithParams(API_CONFIG.categories, commonParams),
                 buildUrlWithParams(API_CONFIG.sources, commonParams),
-                buildUrlWithParams(API_CONFIG.trends, commonParams),
+                buildUrlWithParams(API_CONFIG.trends, {...commonParams, timeUnit: timeUnit}),
             ];
 
             const [dashboard, categories, sources, trends] = await Promise.all(
@@ -1382,6 +1412,60 @@
 
         modal.style.display = 'block';
     }
+
+    async function updateTrendChart() {
+        try {
+            const timeUnit = document.getElementById('timeUnit').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const sourceString = Array.from(document.getElementById('filterSourceList').selectedOptions)
+                .map(option => option.value).join(',');
+            const duplicateString = Array.from(document.getElementById('duplicateTypeList').selectedOptions)
+                .map(option => option.value).join(',');
+
+            // 获取趋势数据
+            const trendsData = await fetch(buildUrlWithParams(API_CONFIG.trends, {
+                startDate,
+                endDate,
+                filterSourceList: sourceString,
+                duplicateTypeList: duplicateString,
+                timeUnit: timeUnit  // 新增类型参数
+            })).then(handleResponse);
+
+            // 更新趋势数据
+            appData.trends = {
+                months: trendsData.timeList,
+                income: trendsData.incomeTrend,
+                expense: trendsData.expenseTrend
+            };
+
+            // 重新渲染折线图
+            renderTrendChart();
+        } catch (error) {
+            console.error('趋势图更新失败:', error);
+        }
+    }
+
+    function renderTrendChart() {
+        const lineChart = echarts.getInstanceByDom(document.getElementById('lineChart'));
+        const option = lineChart.getOption();
+
+        // 更新图表配置
+        option.xAxis[0].data = appData.trends.months;
+        option.series[0].data = appData.trends.income;
+        option.series[1].data = appData.trends.expense;
+
+        // 根据类型调整x轴格式
+        option.xAxis[0].axisLabel.formatter = function (value) {
+            if (value.length === 4) { // 年度格式
+                return `${value}年`;
+            }
+            return value; // 月度格式保持原样
+        };
+
+        lineChart.setOption(option);
+    }
+
 
 
     // 关闭弹窗逻辑

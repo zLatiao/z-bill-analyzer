@@ -54,4 +54,9 @@ public class QueryParam {
      * 过滤重复项类型列表
      */
     private List<Integer> duplicateTypeList;
+
+    /**
+     * 时间单位：0日度、1月度、2季度、3年度
+     */
+    private Integer timeUnit = 1;
 }
