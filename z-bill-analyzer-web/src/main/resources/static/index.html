@@ -50,8 +50,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 32px;
-            height: 32px;
+            width: 36px;  /* 稍微加大容器尺寸 */
+            height: 36px;
             border-radius: 50%;
             background: #f0f0f0;
             transition: background 0.2s;
@@ -62,20 +62,24 @@
         }
 
         .icon-clock {
-            font-size: 18px;
+            font-size: 20px;  /* 稍微加大图标 */
+            position: relative;
+            z-index: 1;       /* 确保图标在容器最上层 */
         }
 
         .badge {
             position: absolute;
-            top: -5px;
-            right: -5px;
+            top: -6px;    /* 调整垂直位置 */
+            right: -8px;  /* 调整水平位置 */
             background: var(--error-color);
             color: white;
-            border-radius: 50%;
+            border-radius: 10px;  /* 改为胶囊形状 */
             padding: 2px 6px;
             font-size: 12px;
             min-width: 18px;
             text-align: center;
+            line-height: 1.2;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
 
         .import-records-popup {
