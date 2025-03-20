@@ -49,7 +49,7 @@ public interface IBillService {
      * @param billInfos
      * @return Integer
      */
-    Integer saveBill(List<BaseBill<?>> billInfos);
+    Integer saveBills(List<BaseBill<?>> billInfos);
 
     /**
      * 删除账单

@@ -32,7 +32,7 @@ import static java.util.Collections.emptyList;
 public class DefaultBillServiceImpl implements IBillService {
     private final Map<Integer, BillAll> BILL_MAP = new ConcurrentHashMap<>();
 
-    private final AtomicInteger ID_COUNTER = new AtomicInteger(1);
+    private final AtomicInteger ID_COUNTER = new AtomicInteger(0);
 
     private BillAll getBill(Integer id) {
         return BILL_MAP.get(id);
@@ -40,8 +40,8 @@ public class DefaultBillServiceImpl implements IBillService {
 
     @Override
     public ParseResultVO parse(List<BillExcelParseParam> params) {
-        List<BaseBill<?>> billInfos = ParserCore.parse(params);
-        return new ParseResultVO(saveBill(billInfos));
+        List<BaseBill<?>> bills = ParserCore.parse(params);
+        return new ParseResultVO(saveBills(bills));
     }
 
     @Override
@@ -98,7 +98,7 @@ public class DefaultBillServiceImpl implements IBillService {
     @Override
     public ImportBillInfoVO getImportBillInfo(Integer id) {
         BillAll billAll = getBill(id);
-        List<BaseBill<?>> baseBills = billAll.billInfos();
+        List<BaseBill<?>> baseBills = billAll.bills();
         List<? extends BaseBillDetail> billDetails = billAll.billDetails();
 
         List<String> fileNames = baseBills.stream().map(BaseBill::getFileName).distinct().toList();
@@ -120,13 +120,13 @@ public class DefaultBillServiceImpl implements IBillService {
 
     @Override
     public List<BaseBill<?>> getBillInfos(Integer id) {
-        return getBill(id).billInfos();
+        return getBill(id).bills();
     }
 
     @Override
-    public Integer saveBill(List<BaseBill<?>> billInfos) {
+    public Integer saveBills(List<BaseBill<?>> bills) {
         int id = ID_COUNTER.getAndIncrement();
-        BILL_MAP.put(id, new BillAll(billInfos, billInfos.stream().flatMap(x -> x.getBillDetails().stream()).toList()));
+        BILL_MAP.put(id, new BillAll(bills, bills.stream().flatMap(x -> x.getBillDetails().stream()).toList()));
         return id;
     }
 

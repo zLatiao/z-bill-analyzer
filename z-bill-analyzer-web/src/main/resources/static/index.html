@@ -255,6 +255,24 @@
             z-index: 1;
             margin: 0;
         }
+
+        .mock-data-link {
+            margin-top: 0.8rem;
+            text-align: center;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .mock-data-link span {
+            cursor: pointer;
+            text-decoration: underline;
+            transition: color 0.2s;
+        }
+
+        .mock-data-link span:hover {
+            color: var(--primary-color);
+        }
+
     </style>
 </head>
 <body>
@@ -287,6 +305,11 @@
 
     <div class="action-buttons">
         <button class="primary-btn" onclick="uploadFiles()">开始分析</button>
+    </div>
+
+    <!-- 添加模拟数据链接 -->
+    <div class="mock-data-link">
+        <span onclick="handleMockData()">模拟数据</span>
     </div>
 </div>
 
@@ -449,6 +472,12 @@
         files.splice(index, 1);
         renderFileList();
     }
+
+    function handleMockData() {
+        document.cookie = "IMPORT_RECORD_ID=0; path=/; max-age=86400"; // 有效期1天
+        window.location.href = '/visualization';
+    }
+
 </script>
 </body>
 </html>

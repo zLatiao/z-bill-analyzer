@@ -1,0 +1,72 @@
+{
+  "fileName" : "CMB_1234--------5678_20240101_20250331.csv",
+  "startTime" : "2024-01-01T00:00:00",
+  "endTime" : "2025-03-31T23:59:59.999999999",
+  "exportTime" : "2025-03-04T21:10:15",
+  "billDetails" : [ {
+    "amount" : 31.54,
+    "amountType" : 1,
+    "transactionType" : "银联快捷支付",
+    "source" : 2,
+    "transactionTime" : "2025-03-03T16:44:51",
+    "counterparty" : "美团外卖App袁记云饺",
+    "remark" : "美团-美团外卖App袁记云饺",
+    "mergeType" : null,
+    "bankAccountLast4Number" : "5678",
+    "balance" : 0.00,
+    "merge" : false
+  }, {
+    "amount" : 31.54,
+    "amountType" : 0,
+    "transactionType" : "朝朝宝赎回",
+    "source" : 2,
+    "transactionTime" : "2025-03-03T15:44:51",
+    "counterparty" : "朝朝宝",
+    "remark" : "朝朝宝",
+    "mergeType" : null,
+    "bankAccountLast4Number" : "5678",
+    "balance" : 31.54,
+    "merge" : false
+  }, {
+    "amount" : 478.00,
+    "amountType" : 1,
+    "transactionType" : "银联快捷支付",
+    "source" : 2,
+    "transactionTime" : "2025-03-02T14:52:17",
+    "counterparty" : "美团App芸山季云南野生菌火锅",
+    "remark" : "美团-美团App芸山季云南野生菌火锅",
+    "mergeType" : null,
+    "bankAccountLast4Number" : "5678",
+    "balance" : 0.00,
+    "merge" : false
+  }, {
+    "amount" : 478.00,
+    "amountType" : 0,
+    "transactionType" : "朝朝宝赎回",
+    "source" : 2,
+    "transactionTime" : "2025-03-02T13:52:17",
+    "counterparty" : "朝朝宝",
+    "remark" : "朝朝宝",
+    "mergeType" : null,
+    "bankAccountLast4Number" : "5678",
+    "balance" : 478.00,
+    "merge" : false
+  }, {
+    "amount" : 80.00,
+    "amountType" : 1,
+    "transactionType" : "网联协议支付",
+    "source" : 2,
+    "transactionTime" : "2025-03-02T12:40:10",
+    "counterparty" : "春满园",
+    "remark" : "财付通-春满园",
+    "mergeType" : null,
+    "bankAccountLast4Number" : "5678",
+    "balance" : 0.00,
+    "merge" : false
+  } ],
+  "isBankBill" : true,
+  "bankAccountNumber" : "一卡通:1234********5678   招商银行",
+  "bankAccountLast4Number" : "5678",
+  "currency" : "人民币",
+  "filterSettings" : "无"
+}

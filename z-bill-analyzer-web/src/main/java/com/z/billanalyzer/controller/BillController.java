@@ -193,8 +193,8 @@ public class BillController {
         if (importRecordId == null) {
             throw new RuntimeException("请先去导入账单文件");
         }
-        // -1的话就是mock数据
-        if (importRecordId.equals(-1)) {
+        // 0的话就是mock数据
+        if (importRecordId.equals(0)) {
             return;
         }
         Object obj = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest().getSession().getAttribute("IMPORT_RECORDS");

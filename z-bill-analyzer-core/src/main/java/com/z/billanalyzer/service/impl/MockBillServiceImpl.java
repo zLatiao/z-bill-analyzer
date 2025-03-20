@@ -42,7 +42,7 @@ public class MockBillServiceImpl implements IBillService {
     }
 
     @Override
-    public Integer saveBill(List<BaseBill<?>> billInfos) {
+    public Integer saveBills(List<BaseBill<?>> billInfos) {
         return 0;
     }
 
