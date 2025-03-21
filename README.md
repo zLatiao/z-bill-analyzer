@@ -23,7 +23,7 @@ CSV文件获取攻略：
 - 图表分析：饼状图、折线图
 - 账单明细分页列表、账单明细详情
 
-功能演示1
+功能演示
 
 ![](https://raw.githubusercontent.com/zLatiao/z-bill-analyzer/refs/heads/main/img/index.jpeg)
 
