@@ -1,0 +1,1488 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>z-bill-analyzer</title>
+    <script src="js\echarts.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+
+        .dashboard {
+            display: grid;
+            /*这里可以改卡片数量*/
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .chart-box {
+            flex: 1;
+            min-width: 0;
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart {
+            height: 400px;
+            width: 100%;
+        }
+
+        #transactionTable {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #transactionTable th, #transactionTable td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        #transactionTable th {
+            background: #fafafa;
+            cursor: pointer;
+        }
+
+        .filter {
+            margin-bottom: 10px;
+        }
+
+        .income {
+            color: #67C23A;
+        }
+
+        .expense {
+            color: #F56C6C;
+        }
+
+        .value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .chart-container {
+                flex-direction: column;
+            }
+
+            .chart-box {
+                width: 100%;
+            }
+        }
+        /* 新增日期选择器样式 */
+        .date-range {
+            padding: 10px 15px !important;
+            border: 1px solid #e4e7ed !important;
+            border-radius: 6px !important;
+            background: white;
+            color: #606266;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: border-color 0.3s;
+        }
+
+        /* 按钮统一 */
+        button {
+            padding: 10px 20px !important;
+            border-radius: 6px !important;
+            background: #409EFF !important;
+            transition: opacity 0.3s;
+            cursor: pointer;
+        }
+        .date-range:hover { border-color: #c0c4cc; }
+        .date-range:focus {
+            border-color: #409EFF !important;
+            box-shadow: 0 0 4px rgba(64, 158, 255, 0.3);
+        }
+        button:hover { opacity: 0.9; }
+        /* 保持与图表配色一致 */
+        .date-range { color: #409EFF; } /* 主色蓝 */
+        /* 新增数值组布局 */
+        .value-group {
+            display: flex;
+            justify-content: space-between; /* 左右两端对齐 */
+            align-items: center;
+        }
+
+        /* 右侧数值样式（可选） */
+        #incomeCnt, #expenseCnt {
+            font-size: 20px; /* 可调整字体大小 */
+            opacity: 0.8;    /* 可选透明度区分 */
+        }
+
+        /* 在现有样式中添加 */
+        select[multiple] {
+            min-height: 38px; /* 保持与输入框高度一致 */
+
+            option:checked {
+                background: #409EFF20; /* 选中项底色 */
+            }
+        }
+        /* 自定义多选样式 */
+        .custom-multiselect {
+            position: relative;
+            width: 260px;
+            font-family: Arial, sans-serif;
+        }
+
+        .selected-tags {
+            background: white;
+            border: 1px solid #e4e7ed;
+            border-radius: 6px;
+            padding: 1px 10px;
+            min-height: 38px;
+            cursor: text;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .remove-tag {
+            position: absolute;
+            right: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #409EFF;
+            font-size: 12px;
+        }
+
+        .search-input {
+            border: none;
+            outline: none;
+            padding: 5px 0;
+            width: 100%;
+            background: transparent;
+        }
+
+        .dropdown-options {
+            position: absolute;
+            width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #e4e7ed;
+            border-radius: 6px;
+            margin-top: 5px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 1000;
+        }
+
+        .dropdown-options ul {
+            list-style: none;
+            padding: 5px 0;
+            margin: 0;
+        }
+
+        .dropdown-options li {
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .dropdown-options li:hover {
+            background: #f5f7fa;
+        }
+
+        .dropdown-options li.selected {
+            background: #409EFF10;
+            color: #409EFF;
+            position: relative;
+        }
+
+        .dropdown-options li.selected::after {
+            content: "✓";
+            position: absolute;
+            right: 15px;
+            color: #409EFF;
+        }
+
+        .search-input::placeholder {
+            color: #c0c4cc;
+            transition: opacity 0.3s ease; /* 添加过渡效果 */
+        }
+
+        /* 当有选中项时隐藏placeholder */
+        .tags-container:not(:empty) + .search-input::placeholder {
+            opacity: 0; /* 保留占位符空间但隐藏文字 */
+        }
+        /* 原有.date-range和新增高度设置 */
+        .date-range, .selected-tags {
+            height: 40px !important; /* 与时间筛选框统一高度 */
+            box-sizing: border-box; /* 确保内边距不影响总高度 */
+        }
+        .tags-container {
+            max-height: 38px; /* 略小于父容器留出边距 */
+            overflow-y: auto; /* 垂直滚动而非撑开高度 */
+            flex-wrap: wrap; /* 允许换行但限制高度 */
+            align-items: center; /* 垂直居中 */
+        }
+        /* 当有标签时隐藏placeholder */
+        .tags-container:not(:empty) + .search-input::placeholder {
+            opacity: 0;
+        }
+        .tag {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            text-decoration: line-through; /* 添加横线贯穿效果 */
+            color: #409EFF; /* 保持原有颜色 */
+            background: #409EFF20; /* 保持原有背景色 */
+            border-radius: 4px; /* 保持原有圆角 */
+            padding: 4px 25px 4px 10px; /* 保持原有内边距 */
+            font-size: 12px; /* 保持原有字体大小 */
+        }
+
+        .tag:hover {
+            text-decoration: none; /* 移除横线贯穿效果 */
+        }
+
+        /* 统一筛选控件高度 */
+        .date-range, .custom-multiselect .selected-tags {
+            height: 40px;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+
+        /* 多选框标签容器 */
+        .tags-container {
+            max-height: 36px;
+            overflow-y: auto;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        /* 隐藏无选择时的提示 */
+        .tags-container:not(:empty) + .search-input::placeholder {
+            opacity: 0;
+        }
+        #pageSelect {
+            padding: 8px 12px;
+            border: 1px solid #e4e7ed;
+            border-radius: 4px;
+            background: white;
+            color: #606266;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        #pageSelect:hover {
+            border-color: #c0c4cc;
+        }
+
+        #pageSelect:focus {
+            border-color: #409EFF;
+            box-shadow: 0 0 4px rgba(64, 158, 255, 0.3);
+        }
+        /* 分页控件容器 */
+        .pagination-container {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center; /* 水平居中 */
+            align-items: center;
+            gap: 10px; /* 调整元素之间的间距 */
+        }
+
+        /* 分页按钮和下拉框 */
+        .pagination {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .page-item {
+            padding: 6px 12px;
+            border: 1px solid #e4e7ed;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .page-item a {
+            text-decoration: none;
+            color: #606266;
+        }
+
+        .page-item:hover {
+            background: #f5f7fa;
+        }
+
+        .page-item.active {
+            background: #409EFF;
+            border-color: #409EFF;
+        }
+
+        .page-item.active a {
+            color: white;
+        }
+
+        /* 每页条数选择器 */
+        .pagination-size {
+            margin-right: 10px; /* 调整与分页按钮的间距 */
+        }
+
+        #pageSizeSelect {
+            padding: 8px 12px;
+            border: 1px solid #e4e7ed;
+            border-radius: 4px;
+            background: white;
+            color: #606266;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        #pageSizeSelect:hover {
+            border-color: #c0c4cc;
+        }
+
+        #pageSizeSelect:focus {
+            border-color: #409EFF;
+            box-shadow: 0 0 4px rgba(64, 158, 255, 0.3);
+        }
+
+        /* 分页信息 */
+        .pagination-info {
+            color: #909399;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+
+        /* 修改选中项的背景色为红色 */
+        .dropdown-options li.selected {
+            background: #ffebee; /* 浅红色背景 */
+            color: #d32f2f; /* 深红色文字 */
+            position: relative;
+        }
+
+        .dropdown-options li.selected::after {
+            content: "✓";
+            position: absolute;
+            right: 15px;
+            color: #d32f2f; /* 深红色对勾 */
+        }
+
+        /* 修改多选框标签的样式为红色 */
+        .tag {
+            background: #ffebee; /* 浅红色背景 */
+            color: #d32f2f; /* 深红色文字 */
+            border-radius: 4px;
+            padding: 4px 25px 4px 10px;
+            font-size: 12px;
+        }
+
+        .tag:hover {
+            background: #ffcdd2; /* 更深的红色背景 */
+        }
+
+        /* 确保新增的多选框样式与现有的一致 */
+        .custom-multiselect {
+            position: relative;
+            width: 260px;
+            font-family: Arial, sans-serif;
+            margin-right: 10px; /* 确保与右边的按钮有间距 */
+        }
+        /* 确保下拉列表可见性 */
+        .dropdown-options {
+            display: none; /* 默认隐藏 */
+            /* 其他现有样式保持不变 */
+        }
+
+        .dropdown-options.show {
+            display: block; /* 通过添加show类显示 */
+        }
+
+        #transactionTable {
+            table-layout: fixed; /* 新增固定列宽算法 */
+            width: 100%; /* 保持原有宽度 */
+        }
+
+        #transactionTable th,
+        #transactionTable td {
+            width: 12.5%; /* 8列平均分配 */
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+            white-space: nowrap; /* 防止换行 */
+            overflow: hidden; /* 隐藏溢出内容 */
+            text-overflow: ellipsis; /* 显示省略号 */
+        }
+
+        /* 自定义列宽调整 */
+        #transactionTable th:nth-child(1), /* 时间列 */
+        #transactionTable td:nth-child(1) {
+            width: 15%;
+        }
+
+        #transactionTable th:nth-child(2), /* 分类列 */
+        #transactionTable td:nth-child(2) {
+            width: 12%;
+        }
+
+        #transactionTable th:nth-child(4), /* 金额列 */
+        #transactionTable td:nth-child(4) {
+            width: 10%;
+        }
+
+        #transactionTable th:nth-child(5), /* 收/支列 */
+        #transactionTable td:nth-child(5) {
+            width: 8%;
+        }
+
+        #transactionTable th:nth-child(7), /* 备注列 */
+        #transactionTable td:nth-child(7) {
+            width: 10%;
+            /*white-space: normal; !* 允许备注换行 *!*/
+        }
+
+        #transactionTable th:nth-child(8), /* 操作列 */
+        #transactionTable td:nth-child(8) {
+            width: 8%;
+            min-width: 100px;
+        }
+
+        /* 在现有样式中添加 */
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            max-width: 300px;
+            z-index: 9999;
+            pointer-events: none;
+            display: none;
+        }
+
+        /* 修改表格单元格样式 */
+        #transactionTable td {
+            position: relative; /* 为tooltip定位提供基准 */
+        }
+
+        /* 弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 15% auto;
+            padding: 20px;
+            width: 70%;
+            border-radius: 8px;
+            position: relative;
+            max-width: 800px; /* 添加最大宽度限制 */
+        }
+
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 10px;
+            font-size: 28px;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 改为三列布局 */
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        /* 添加长字段的特殊处理 */
+        .modal-value.long {
+            word-break: break-all;
+            max-height: 80px;
+            overflow-y: auto;
+        }
+
+        .modal-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .modal-label {
+            color: #909399;
+            min-width: 80px;
+            margin-right: 10px;
+        }
+
+        .modal-value {
+            color: #606266;
+            word-break: break-all;
+        }
+
+        /* 操作按钮样式 */
+        .btn-detail {
+            padding: 4px 8px !important;  /* 缩小内边距 */
+            font-size: 12px !important;   /* 缩小字体 */
+            min-width: 60px;              /* 设置最小宽度 */
+            line-height: 1.2;             /* 调整行高 */
+            margin: 2px;                  /* 添加小外边距 */
+            background: #409EFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .btn-detail:hover {
+            opacity: 0.9;
+        }
+
+        #timeUnit {
+            padding: 8px 12px;
+            border: 1px solid #e4e7ed;
+            border-radius: 6px;
+            background: white;
+            color: #606266;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        #timeUnit:hover {
+            border-color: #c0c4cc;
+        }
+
+        #timeUnit:focus {
+            border-color: #409EFF;
+            box-shadow: 0 0 4px rgba(64, 158, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+<div class="filter">
+    <!-- 修改后的日期选择器区域 -->
+    <div style="margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+        <!-- 原有日期选择器 -->
+        <input type="date" id="startDate" class="date-range" placeholder="开始日期">
+        <input type="date" id="endDate" class="date-range" placeholder="结束日期">
+
+        <!-- 在原有select位置替换为以下结构 -->
+        <div class="custom-multiselect">
+            <!-- 显示已选标签和输入框 -->
+            <div class="selected-tags" onclick="toggleDropdown()">
+                <div class="tags-container">
+                    <!-- 已选标签动态插入到这里 -->
+                </div>
+                <input type="text"
+                       class="search-input"
+                       placeholder="过滤来源"
+                       id="searchInput" oninput="filterOptions(this.value)">
+            </div>
+
+            <!-- 下拉选项容器 -->
+            <div class="dropdown-options">
+                <ul>
+                    <li onclick="toggleOption('0', this)">微信</li>
+                    <li onclick="toggleOption('1', this)">支付宝</li>
+                    <li onclick="toggleOption('2', this)">招商银行</li>
+                </ul>
+            </div>
+
+            <!-- 隐藏的原始select用于表单提交 -->
+            <select id="filterSourceList" name="filterSourceList" multiple hidden>
+                <option value="0">微信</option>
+                <option value="1">支付宝</option>
+                <option value="2">招商银行</option>
+            </select>
+        </div>
+
+        <!-- 在过滤来源多选框后面添加以下代码 -->
+        <div class="custom-multiselect">
+            <div class="selected-tags" onclick="toggleDuplicateDropdown()">
+                <div class="tags-container">
+                    <!-- 已选标签动态插入到这里 -->
+                </div>
+                <input type="text"
+                       class="search-input"
+                       placeholder="过滤重复项"
+                       id="duplicateSearchInput" oninput="filterDuplicateOptions(this.value)">
+            </div>
+            <div class="dropdown-options">
+                <ul>
+                    <li onclick="toggleDuplicateOption('0', this)">相同来源</li>
+                    <li onclick="toggleDuplicateOption('1', this)">银行</li>
+                </ul>
+            </div>
+            <select id="duplicateTypeList" name="duplicateTypeList" multiple hidden>
+                <option value="0">相同来源</option>
+                <option value="1">银行</option>
+            </select>
+        </div>
+
+
+        <button onclick="refreshData()"
+                style="padding: 8px 15px; background: #409EFF; color: white; border: none; border-radius: 4px;">
+            筛选
+        </button>
+    </div>
+</div>
+<div class="dashboard">
+    <!-- 修改后的累计收入卡片 -->
+    <div class="card">
+        <h3>累计收入</h3>
+        <div class="value-group"> <!-- 新增包裹容器 -->
+            <div class="value income" id="income">0.00</div>
+        </div>
+        <h3>累计收入数</h3>
+        <div class="value-group"> <!-- 新增包裹容器 -->
+            <div class="value income" id="incomeCnt">0.00</div>
+        </div>
+    </div>
+
+    <!-- 修改后的累计支出卡片 -->
+    <div class="card">
+        <h3>累计支出</h3>
+        <div class="value-group"> <!-- 新增包裹容器 -->
+            <div class="value expense" id="expense">0.00</div>
+        </div>
+        <h3>累计支出数</h3>
+        <div class="value-group">
+            <div class="value expense" id="expenseCnt">0.00</div>
+        </div>
+    </div>
+    <div class="card">
+        <h3>累计结余</h3>
+        <div class="value" id="balance">0.00</div>
+    </div>
+</div>
+
+<div class="chart-container">  <!-- 第一行：双饼图 -->
+    <div class="chart-box">
+        <div id="pieChart" class="chart"></div>
+    </div>
+    <div class="chart-box">
+        <div id="sourceChart" class="chart"></div>
+    </div>
+</div>
+
+<div class="chart-box" style="width:100%">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h3>收支趋势</h3>
+        <select id="timeUnit" class="date-range" onchange="updateTrendChart()" style="width: 120px;">
+            <option value="0">日度</option>
+            <option value="1">月度</option>
+            <option value="2">季度</option>
+            <option value="3">年度</option>
+        </select>
+    </div>
+    <div id="lineChart" class="chart"></div>
+</div>
+
+<table id="transactionTable">
+    <thead>
+    <tr>
+        <th onclick="sortTable('transactionTime')">时间 ▼</th>
+        <th onclick="sortTable('transactionType')">分类 ▼</th>
+        <th onclick="sortTable('counterparty')">交易对方 ▼</th>
+        <th onclick="sortTable('amount')">金额 ▼</th>
+        <th onclick="sortTable('amountTypeStr')">收/支 ▼</th>
+        <th onclick="sortTable('sourceStr')">来源 ▼</th>
+        <th onclick="sortTable('remark')">备注 ▼</th>
+        <th>操作</th>
+    </tr>
+    </thead>
+    <tbody id="transactionBody"></tbody>
+</table>
+
+<!-- 详情弹窗 -->
+<div id="detailModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3>账单详情</h3>
+        <div id="modalContent" class="modal-body"></div>
+    </div>
+</div>
+
+
+<!-- 分页控件 -->
+<!-- 分页控件 -->
+<div class="pagination-container">
+    <!-- 将 pageSizeSelect 移到分页控件的左边 -->
+    <div class="pagination-size">
+        <select id="pageSizeSelect" onchange="changePageSize(this.value)">
+            <option value="10">10条/页</option>
+            <option value="20">20条/页</option>
+            <option value="50">50条/页</option>
+            <option value="100">100条/页</option>
+        </select>
+    </div>
+
+    <ul class="pagination">
+        <li class="page-item">
+            <a href="javascript:void(0)" onclick="changePage(pagination.currentPage - 1)">上一页</a>
+        </li>
+        <select id="pageSelect" onchange="changePage(this.value)" style="margin-right: 10px;">
+            <!-- 页码动态生成 -->
+        </select>
+        <li class="page-item">
+            <a href="javascript:void(0)" onclick="changePage(pagination.currentPage + 1)">下一页</a>
+        </li>
+    </ul>
+
+    <div class="pagination-info">
+        显示第 <span id="startRow">0</span> - <span id="endRow">0</span> 条，共 <span id="totalRecords">0</span> 条
+    </div>
+</div>
+
+
+<script>
+    // Spring Boot接口配置
+    const API_CONFIG = {
+        dashboard: '/api/bill/dashboard',
+        categories: '/api/bill/categories',
+        sources: '/api/bill/sources',
+        trends: '/api/bill/trends',
+        page: '/api/bill/page'
+    };
+
+    // 全局数据容器
+    let appData = {
+        dashboard: {},
+        categories: [],
+        sources: [],
+        trends: {months: [], income: [], expense: []},
+        transactions: []
+    };
+
+    let pagination = {
+        currentPage: 1,
+        pageSize: 10,
+        totalRecords: 0,
+        totalPages: 1
+
+    };
+
+    // 多选功能逻辑
+    let selectedOptions = new Set();
+
+    let sortField = 'transactionTime';
+    let sortOrder = 'desc';
+
+    function toggleDropdown() {
+        const options = document.querySelector('.dropdown-options');
+        options.style.display = options.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function toggleOption(value, element) {
+        const option = document.querySelector(`#filterSourceList option[value="${value}"]`);
+
+        if (selectedOptions.has(value)) {
+            selectedOptions.delete(value);
+            option.selected = false;
+            element.classList.remove('selected');
+        } else {
+            selectedOptions.add(value);
+            option.selected = true;
+            element.classList.add('selected');
+        }
+
+        updateSelectedTags();
+
+        // 新增：当有选择时隐藏placeholder
+        const searchInput = document.getElementById('searchInput');
+        searchInput.placeholder = selectedOptions.size > 0 ? '' : '过滤来源';
+    }
+
+    function updateSelectedTags() {
+        const container = document.querySelector('.tags-container');
+        container.innerHTML = '';
+
+        selectedOptions.forEach(value => {
+            const text = document.querySelector(`#filterSourceList option[value="${value}"]`).textContent;
+            const tag = document.createElement('div');
+            tag.className = 'tag';
+            tag.innerHTML = `
+            ${text}
+            <span class="remove-tag" onclick="removeTag('${value}')">×</span>
+        `;
+            container.appendChild(tag);
+        });
+    }
+
+    function removeTag(value) {
+        const option = document.querySelector(`#filterSourceList option[value="${value}"]`);
+        selectedOptions.delete(value);
+        option.selected = false;
+        document.querySelector(`.dropdown-options li[onclick*="${value}"]`).classList.remove('selected');
+        updateSelectedTags();
+
+        // 新增：当没有选择时恢复placeholder
+        const searchInput = document.getElementById('searchInput');
+        searchInput.placeholder = selectedOptions.size > 0 ? '' : '过滤来源';
+    }
+
+    function filterOptions(keyword) {
+        const items = document.querySelectorAll('.dropdown-options li');
+        keyword = keyword.toLowerCase();
+
+        items.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            item.style.display = text.includes(keyword) ? 'block' : 'none';
+        });
+    }
+
+    // 点击外部关闭下拉
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.custom-multiselect')) {
+            document.querySelector('.dropdown-options').style.display = 'none';
+        }
+    });
+
+    // 统一响应处理
+    async function handleResponse(response) {
+        if (!response.ok) throw new Error(`HTTP错误 ${response.status}`);
+        const res = await response.json();
+        if (res.code !== 200) throw new Error(res.msg || '请求失败');
+        return res.data;
+    }
+
+    // 新增日期参数处理函数
+    function buildUrlWithParams(baseUrl, params = {}) {
+        const url = new URL(baseUrl, window.location.origin);
+        // 参数序列化
+        Object.entries(params).forEach(([key, value]) => {
+            if (value !== null && value !== undefined) {
+                url.searchParams.append(key, value);
+            }
+        });
+        return url.href;
+    }
+
+    async function fetchData() {
+        try {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            // 获取多选值并转换为逗号分隔字符串
+            const sourceElements = document.getElementById('filterSourceList').selectedOptions;
+            const sourceValues = Array.from(sourceElements).map(option => option.value);
+            const sourceString = sourceValues.length > 0 ? sourceValues.join(',') : null;
+
+            // 获取过滤重复项多选值并转换为逗号分隔字符串
+            const duplicateElements = document.getElementById('duplicateTypeList').selectedOptions;
+            const duplicateValues = Array.from(duplicateElements).map(option => option.value);
+            const duplicateString = duplicateValues.length > 0 ? duplicateValues.join(',') : null;
+
+            // 折线图的参数
+            const timeUnit = document.getElementById('timeUnit').value;
+
+            // 动态拼接所有API的请求参数
+            const commonParams = {
+                startDate,
+                endDate,
+                filterSourceList: sourceString,
+                duplicateTypeList: duplicateString
+            };
+            const requestUrls = [
+                buildUrlWithParams(API_CONFIG.dashboard, commonParams),
+                buildUrlWithParams(API_CONFIG.categories, commonParams),
+                buildUrlWithParams(API_CONFIG.sources, commonParams),
+                buildUrlWithParams(API_CONFIG.trends, {...commonParams, timeUnit: timeUnit}),
+            ];
+
+            const [dashboard, categories, sources, trends] = await Promise.all(
+                requestUrls.map(url => fetch(url).then(handleResponse))
+            );
+
+            // 修改分页接口请求参数
+            const transactionsResponse = await fetch(buildUrlWithParams(API_CONFIG.page, {
+                ...commonParams,
+                pageIndex: pagination.currentPage,
+                pageSize: pagination.pageSize,
+                orderBy: sortField,
+                orderType: sortOrder
+            })).then(handleResponse);
+
+            const {list, total} = await transactionsResponse;
+
+            // 更新分页信息
+            pagination.totalRecords = total;
+            pagination.totalPages = Math.ceil(total / pagination.pageSize);
+
+            return {
+                dashboard: {
+                    income: dashboard.income,
+                    incomeCnt: dashboard.incomeCnt,
+                    expense: dashboard.expense,
+                    expenseCnt: dashboard.expenseCnt,
+                    balance: dashboard.balance,
+                },
+                categories: categories,
+                sources: sources,
+                trends: {
+                    months: trends.timeList,
+                    income: trends.incomeTrend,
+                    expense: trends.expenseTrend
+                },
+                transactions: list.map(t => ({
+                    transactionTime: t.transactionTime,
+                    transactionType: t.transactionType,
+                    counterparty: t.counterparty,
+                    amountTypeStr: t.amountTypeStr,
+                    amount: t.amount,
+                    sourceStr: t.sourceStr,
+                    remark: t.remark,
+                    // 补充新增字段
+                    product: t.product,
+                    paymentMethod: t.paymentMethod,
+                    transactionStatus: t.transactionStatus,
+                    transactionNo: t.transactionNo,
+                    merchantNo: t.merchantNo,
+                    balance: t.balance
+                }))
+
+            };
+        } catch (error) {
+            console.error('数据加载失败:', error);
+            throw error;
+        }
+    }
+
+    // 页面初始化
+    async function initPage() {
+        const loading = document.createElement('div');
+        loading.textContent = '数据加载中...';
+        document.body.prepend(loading);
+
+        try {
+            // 确保tags-container为空
+            const tagsContainer = document.querySelector('.tags-container');
+            tagsContainer.innerHTML = '';
+
+            // 确保placeholder显示
+            const searchInput = document.getElementById('searchInput');
+            searchInput.placeholder = '过滤来源';
+
+            const tagsContainer1 = document.querySelectorAll('.tags-container')[1];
+            tagsContainer1.innerHTML = ''; // 清空标签容器
+
+            const duplicateSearchInput = document.getElementById('duplicateSearchInput');
+            duplicateSearchInput.placeholder = '过滤重复项'; // 确保 placeholder 正确设置
+
+            const data = await fetchData();
+            appData = data;
+
+            // 更新卡片数据
+            document.getElementById('income').textContent = appData.dashboard.income.toFixed(2);
+            document.getElementById('incomeCnt').textContent = appData.dashboard.incomeCnt.toFixed(2);
+
+            document.getElementById('expense').textContent = appData.dashboard.expense.toFixed(2);
+            document.getElementById('expenseCnt').textContent = appData.dashboard.expenseCnt.toFixed(2);
+
+            document.getElementById('balance').textContent = appData.dashboard.balance.toFixed(2);
+
+            // 初始化图表
+            initCharts();
+            // 初始化表格
+            renderTable(appData.transactions);
+
+            renderPagination(); // 新增此行
+        } catch (e) {
+            alert('初始化失败: ' + e.message);
+        } finally {
+            loading.remove();
+        }
+    }
+
+
+    // 新增刷新数据函数
+    function refreshData() {
+        // 保存当前选中的选项
+        const selectedSourceValues = Array.from(document.getElementById('filterSourceList').selectedOptions).map(option => option.value);
+        const selectedDuplicateValues = Array.from(document.getElementById('duplicateTypeList').selectedOptions).map(option => option.value);
+
+        initPage().then(() => {
+            // 数据加载完成后，重新应用选中的选项
+            selectedSourceValues.forEach(value => {
+                const option = document.querySelector(`#filterSourceList option[value="${value}"]`);
+                if (option) {
+                    option.selected = true;
+                    selectedOptions.add(value);
+                }
+            });
+            updateSelectedTags(); // 更新显示的标签
+
+            selectedDuplicateValues.forEach(value => {
+                const option = document.querySelector(`#duplicateTypeList option[value="${value}"]`);
+                if (option) {
+                    option.selected = true;
+                    selectedDuplicateOptions.add(value);
+                }
+            });
+            updateSelectedDuplicateTags(); // 更新显示的标签
+        });
+    }
+
+
+    // 图表初始化
+    function initCharts() {
+        // 饼图配置
+        const pieChart = echarts.init(document.getElementById('pieChart'));
+        pieChart.setOption({
+            title: {
+                text: '支出分类占比',
+                left: 'center',
+                textStyle: {fontSize: 16}
+            },
+            tooltip: {
+                trigger: 'item',
+                formatter: '{b}: ¥{c} ({d}%)'
+            },
+            legend: {
+                top: 30,
+                orient: 'vertical',
+                right: 10,
+                itemWidth: 10,
+                itemHeight: 10
+            },
+            series: [{
+                type: 'pie',
+                radius: ['35%', '55%'],
+                center: ['40%', '55%'],
+                data: appData.categories,
+                label: {
+                    formatter: '{b}\n¥{c}',
+                    fontSize: 12
+                },
+                emphasis: {
+                    itemStyle: {shadowBlur: 10}
+                }
+            }]
+        });
+
+        console.log(appData.sources)
+
+        // 新增支出来源饼图（复用categories数据）
+        const sourceChart = echarts.init(document.getElementById('sourceChart'));
+        sourceChart.setOption({
+            title: {
+                text: '支出来源占比',
+                left: 'center',
+                textStyle: {fontSize: 16}
+            },
+            tooltip: {
+                trigger: 'item',
+                formatter: '{b}: ¥{c} ({d}%)'
+            },
+            legend: {
+                top: 30,
+                orient: 'vertical',
+                left: 10,
+                itemWidth: 10,
+                itemHeight: 10
+            },
+            series: [{
+                type: 'pie',
+                radius: ['35%', '55%'],
+                center: ['50%', '55%'],
+                data: appData.sources,
+                label: {
+                    formatter: '{b}\n¥{c}',
+                    fontSize: 12
+                },
+                emphasis: {
+                    itemStyle: {shadowBlur: 10}
+                }
+            }]
+        });
+
+        // 折线图配置
+        const lineChart = echarts.init(document.getElementById('lineChart'));
+        lineChart.setOption({
+            title: {
+                text: '收支趋势',
+                subtext: '支持左右滑动查看历史数据',
+                left: 'center',
+                textStyle: {fontSize: 16}
+            },
+            dataZoom: [{
+                type: 'slider',
+                xAxisIndex: 0,
+                start: 20,
+                end: 80,
+                bottom: 0,
+                height: 15,
+                filterMode: 'filter',
+                brushSelect: false,
+                handleStyle: {
+                    color: '#67C23A',
+                    borderWidth: 1
+                }
+            }],
+            tooltip: {trigger: 'axis'},
+            legend: {
+                data: ['收入', '支出'],
+                bottom: 20,
+                itemWidth: 12,
+                itemHeight: 12
+            },
+            grid: {top: 80, bottom: 100, left: 60, right: 40},
+            xAxis: {
+                type: 'category',
+                data: appData.trends.months,
+                axisLabel: {rotate: 45}
+            },
+            yAxis: [
+                {type: 'value', name: '收入'},
+                {type: 'value', name: '支出'}
+            ],
+            series: [
+                {
+                    name: '收入',
+                    type: 'line',
+                    smooth: true,
+                    data: appData.trends.income,
+                    areaStyle: {opacity: 0.3}
+                },
+                {
+                    name: '支出',
+                    type: 'line',
+                    smooth: true,
+                    yAxisIndex: 1,
+                    data: appData.trends.expense,
+                    lineStyle: {type: 'dashed'}
+                }
+            ]
+        });
+    }
+
+    // 表格功能
+    function renderTable(data) {
+        const tbody = document.getElementById('transactionBody');
+        tbody.innerHTML = data.map((item, index) => `    <tr>        <td>${item.transactionTime}</td>
+        <td>${item.transactionType}</td>
+        <td>${item.counterparty}</td>
+        <td>¥${item.amount.toFixed(2)}</td>
+        <td>${item.amountTypeStr}</td>
+        <td>${item.sourceStr}</td>
+        <td>${item.remark || ''}</td>
+        <td>
+            <button class="btn-detail" onclick="showDetailModal(${index})">查看详情</button>
+        </td>
+    </tr>
+    `).join('');
+
+        // 新增tooltip逻辑
+        const cells = document.querySelectorAll('#transactionTable td');
+        const tooltip = document.createElement('div');
+        tooltip.className = 'tooltip';
+        document.body.appendChild(tooltip);
+
+        cells.forEach(cell => {
+            cell.addEventListener('mouseenter', function(e) {
+                // 仅当内容被截断时显示tooltip
+                if (this.offsetWidth < this.scrollWidth) {
+                    tooltip.style.display = 'block';
+                    tooltip.textContent = this.textContent;
+
+                    // 定位逻辑
+                    const rect = this.getBoundingClientRect();
+                    tooltip.style.left = `${rect.left + window.scrollX}px`;
+                    tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`;
+                }
+            });
+
+            cell.addEventListener('mouseleave', () => {
+                tooltip.style.display = 'none';
+            });
+        });
+    }
+
+    function updatePaginationInfo() {
+        document.getElementById('startRow').textContent = (pagination.currentPage - 1) * pagination.pageSize + 1;
+        document.getElementById('endRow').textContent = Math.min(pagination.currentPage * pagination.pageSize, pagination.totalRecords);
+        document.getElementById('totalRecords').textContent = pagination.totalRecords;
+    }
+
+    function renderPagination() {
+        const pageSelect = document.getElementById('pageSelect');
+        pageSelect.innerHTML = ''; // 清空现有选项
+
+        // 生成页码范围
+        for (let i = 1; i <= pagination.totalPages; i++) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = `第 ${i} 页`;
+            if (i === pagination.currentPage) {
+                option.selected = true;
+            }
+            pageSelect.appendChild(option);
+        }
+
+        updatePaginationInfo();
+    }
+
+    function changePage(newPage) {
+        newPage = parseInt(newPage); // 确保是数字类型
+        newPage = Math.max(1, Math.min(newPage, pagination.totalPages));
+        if (newPage !== pagination.currentPage) {
+            pagination.currentPage = newPage;
+            refreshData(); // 复用原有刷新逻辑
+        }
+    }
+
+    function changePageSize(size) {
+        pagination.pageSize = parseInt(size);
+        pagination.currentPage = 1;
+        refreshData();
+    }
+
+    function sortTable(field) {
+        if (sortField === field) {
+            sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+        } else {
+            sortField = field;
+            sortOrder = 'asc';
+        }
+        refreshData();
+    }
+
+    // 新增：处理过滤重复项多选框的逻辑
+    let selectedDuplicateOptions = new Set();
+
+    function toggleDuplicateDropdown() {
+        const options = document.querySelectorAll('.dropdown-options')[1];
+        options.style.display = options.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function toggleDuplicateOption(value, element) {
+        const option = document.querySelector(`#duplicateTypeList option[value="${value}"]`);
+
+        if (selectedDuplicateOptions.has(value)) {
+            selectedDuplicateOptions.delete(value);
+            option.selected = false;
+            element.classList.remove('selected'); // 直接使用当前元素
+        } else {
+            selectedDuplicateOptions.add(value);
+            option.selected = true;
+            element.classList.add('selected');
+        }
+
+        updateSelectedDuplicateTags();
+        const searchInput = document.getElementById('duplicateSearchInput');
+        searchInput.placeholder = selectedDuplicateOptions.size > 0 ? '' : '过滤重复项';
+    }
+
+    function updateSelectedDuplicateTags() {
+        const container = document.querySelectorAll('.tags-container')[1];
+        container.innerHTML = '';
+
+        selectedDuplicateOptions.forEach(value => {
+            const text = document.querySelector(`#duplicateTypeList option[value="${value}"]`).textContent;
+            const tag = document.createElement('div');
+            tag.className = 'tag';
+            tag.innerHTML = `
+            ${text}
+            <span class="remove-tag" onclick="removeDuplicateTag('${value}')">×</span>
+        `;
+            container.appendChild(tag);
+        });
+    }
+
+    function removeDuplicateTag(value) {
+        const option = document.querySelector(`#duplicateTypeList option[value="${value}"]`);
+        selectedDuplicateOptions.delete(value);
+        option.selected = false;
+
+        // 限定在第二个多选框容器内查找
+        const dropdown = document.querySelectorAll('.custom-multiselect')[1];
+        const listItem = dropdown.querySelector(`li[onclick*="${value}"]`);
+        listItem.classList.remove('selected');
+
+        updateSelectedDuplicateTags();
+
+        const searchInput = document.getElementById('duplicateSearchInput');
+        searchInput.placeholder = selectedDuplicateOptions.size > 0 ? '' : '过滤重复项';
+    }
+
+    function filterDuplicateOptions(keyword) {
+        const items = document.querySelectorAll('.dropdown-options li');
+        keyword = keyword.toLowerCase();
+
+        items.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            item.style.display = text.includes(keyword) ? 'block' : 'none';
+        });
+    }
+
+    // 弹窗控制函数
+    function showDetailModal(index) {
+        const item = appData.transactions[index];
+        const modal = document.getElementById('detailModal');
+        const content = document.getElementById('modalContent');
+
+        content.innerHTML = `
+        <div class="modal-item">
+            <span class="modal-label">账单单号:</span>
+            <span class="modal-value">${item.transactionNo || ''}</span>
+        </div>
+        <div class="modal-item">
+            <span class="modal-label">商家单号:</span>
+            <span class="modal-value">${item.merchantNo || ''}</span>
+        </div>
+        <div class="modal-item">
+            <span class="modal-label">时间:</span>
+            <span class="modal-value">${item.transactionTime}</span>
+        </div>
+        <div class="modal-item">
+            <span class="modal-label">金额:</span>
+            <span class="modal-value">¥${item.amount}</span>
+        </div>
+        <div class="modal-item">
+            <span class="modal-label">收/支:</span>
+            <span class="modal-value">${item.amountTypeStr || ''}</span>
+        </div>
+        <div class="modal-item">
+            <span class="modal-label">支付方式:</span>
+            <span class="modal-value">${item.paymentMethod || ''}</span>
+        </div>
+        <div class="modal-item">
+            <span class="modal-label">分类:</span>
+            <span class="modal-value">${item.transactionType}</span>
+        </div>
+        <div class="modal-item">
+            <span class="modal-label">来源:</span>
+            <span class="modal-value">${item.sourceStr}</span>
+        </div>
+        <div class="modal-item">
+            <span class="modal-label">交易对方:</span>
+            <span class="modal-value">${item.counterparty}</span>
+        </div>
+        <div class="modal-item">
+            <span class="modal-label">商品名称:</span>
+            <span class="modal-value">${item.product || '无'}</span>
+        </div>
+        <div class="modal-item">
+            <span class="modal-label">交易状态:</span>
+            <span class="modal-value">${item.transactionStatus || ''}</span>
+        </div>
+
+        <div class="modal-item">
+            <span class="modal-label">账户余额:</span>
+            <span class="modal-value">¥${item.balance?.toFixed(2) || ''}</span>
+        </div>
+        <div class="modal-item" style="grid-column: 1 / 4;">
+            <span class="modal-label">备注信息:</span>
+            <span class="modal-value">${item.remark || ''}</span>
+        </div>
+    `;
+
+        modal.style.display = 'block';
+    }
+
+    async function updateTrendChart() {
+        try {
+            const timeUnit = document.getElementById('timeUnit').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const sourceString = Array.from(document.getElementById('filterSourceList').selectedOptions)
+                .map(option => option.value).join(',');
+            const duplicateString = Array.from(document.getElementById('duplicateTypeList').selectedOptions)
+                .map(option => option.value).join(',');
+
+            // 获取趋势数据
+            const trendsData = await fetch(buildUrlWithParams(API_CONFIG.trends, {
+                startDate,
+                endDate,
+                filterSourceList: sourceString,
+                duplicateTypeList: duplicateString,
+                timeUnit: timeUnit  // 新增类型参数
+            })).then(handleResponse);
+
+            // 更新趋势数据
+            appData.trends = {
+                months: trendsData.timeList,
+                income: trendsData.incomeTrend,
+                expense: trendsData.expenseTrend
+            };
+
+            // 重新渲染折线图
+            renderTrendChart();
+        } catch (error) {
+            console.error('趋势图更新失败:', error);
+        }
+    }
+
+    function renderTrendChart() {
+        const lineChart = echarts.getInstanceByDom(document.getElementById('lineChart'));
+        const option = lineChart.getOption();
+
+        // 更新图表配置
+        option.xAxis[0].data = appData.trends.months;
+        option.series[0].data = appData.trends.income;
+        option.series[1].data = appData.trends.expense;
+
+        // 根据类型调整x轴格式
+        option.xAxis[0].axisLabel.formatter = function (value) {
+            if (value.length === 4) { // 年度格式
+                return `${value}年`;
+            }
+            return value; // 月度格式保持原样
+        };
+
+        lineChart.setOption(option);
+    }
+
+
+
+    // 关闭弹窗逻辑
+    document.querySelector('.close').onclick = function () {
+        document.getElementById('detailModal').style.display = 'none';
+    }
+
+    window.onclick = function (event) {
+        const modal = document.getElementById('detailModal');
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+
+    // 启动应用
+    initPage();
+</script>
+</body>
+</html>
